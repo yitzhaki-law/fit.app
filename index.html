@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>FitQuest</title>
+<style>
+:root{
+  --bg:#0a0a0a; --bg2:#111; --bg3:#1a1a1a; --bg4:#252525;
+  --g:#00e676; --g2:#00c853;
+  --red:#ff5252; --warn:#ffab40;
+  --text:#f5f5f5; --text2:#9e9e9e; --border:#2a2a2a;
+  --maxw:430px;
+}
+*{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+html,body{background:var(--bg); color:var(--text); font-family:-apple-system,'Segoe UI',Arial,sans-serif; height:100%;}
+body{display:flex; justify-content:center;}
+#root{width:100%; max-width:var(--maxw); min-height:100vh; background:var(--bg); position:relative; display:flex; flex-direction:column;}
+.hidden{display:none !important;}
+button{font-family:inherit; cursor:pointer; border:none; outline:none;}
+input,select{font-family:inherit; outline:none;}
+::-webkit-scrollbar{width:0;height:0;}
+
+/* ---------- AUTH ---------- */
+#authScreen{flex:1; display:flex; flex-direction:column; justify-content:center; padding:28px 22px; gap:14px;}
+#authScreen h1{font-size:34px; text-align:center; color:var(--g); letter-spacing:1px; margin-bottom:4px;}
+#authScreen .sub{text-align:center; color:var(--text2); font-size:13px; margin-bottom:18px;}
+.field{display:flex; flex-direction:column; gap:6px;}
+.field label{font-size:12px; color:var(--text2);}
+.field input, .field select{background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:12px 14px; color:var(--text); font-size:15px;}
+.field select{appearance:none;}
+.btn{border-radius:12px; padding:14px; font-size:16px; font-weight:700; text-align:center;}
+.btn-g{background:linear-gradient(135deg,var(--g),var(--g2)); color:#04140b;}
+.btn-outline{background:transparent; border:1px solid var(--border); color:var(--text);}
+.btn-red{background:var(--red); color:#fff;}
+.btn-sm{padding:8px 14px; font-size:13px; border-radius:8px;}
+#authToggle{text-align:center; color:var(--g); font-size:13px; margin-top:6px;}
+.row2{display:flex; gap:10px;}
+.row2>.field{flex:1;}
+#authMsg{color:var(--red); font-size:13px; text-align:center; min-height:16px;}
+
+/* ---------- APP SHELL ---------- */
+#app{flex:1; display:flex; flex-direction:column; min-height:100vh;}
+.topbar{display:flex; align-items:center; justify-content:space-between; padding:16px 18px 10px; }
+.topbar .brand{font-size:20px; font-weight:800; color:var(--g);}
+.iconbtn{width:38px; height:38px; border-radius:50%; background:var(--bg3); display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--text);}
+.page{flex:1; padding:6px 16px 90px; overflow-y:auto;}
+
+/* cards */
+.card{background:var(--bg3); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:14px;}
+.card h3{font-size:14px; color:var(--text2); margin-bottom:10px; font-weight:600;}
+.stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+.stat-box{background:var(--bg4); border-radius:12px; padding:12px; text-align:center;}
+.stat-box .v{font-size:22px; font-weight:800; color:var(--g);}
+.stat-box .l{font-size:11px; color:var(--text2); margin-top:2px;}
+.lb-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); font-size:14px;}
+.lb-row:last-child{border-bottom:none;}
+.lb-rank{width:22px; font-weight:800; color:var(--text2); text-align:center;}
+.lb-rank.top1{color:#ffd700;} .lb-rank.top2{color:#c0c0c0;} .lb-rank.top3{color:#cd7f32;}
+.lb-name{flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.lb-val{color:var(--g); font-weight:700; font-size:13px;}
+.big-btn{display:block; width:100%; background:linear-gradient(135deg,var(--g),var(--g2)); color:#04140b; font-weight:800; font-size:17px; padding:16px; border-radius:16px; text-align:center; margin:14px 0;}
+.tag{display:inline-block; background:var(--bg4); color:var(--warn); font-size:11px; padding:3px 9px; border-radius:20px;}
+
+/* bottom nav */
+#bottomNav{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:var(--maxw); display:flex; background:var(--bg2); border-top:1px solid var(--border); padding:8px 4px calc(8px + env(safe-area-inset-bottom));}
+.navbtn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; color:var(--text2); font-size:10px; padding:4px 0;}
+.navbtn .ic{font-size:20px;}
+.navbtn.active{color:var(--g);}
+
+/* workout */
+.canvas-wrap{display:flex; gap:8px; margin-bottom:12px;}
+.canvas-box{flex:1; position:relative; background:#000; border-radius:14px; overflow:hidden; aspect-ratio:3/4; border:2px solid var(--border);}
+.canvas-box.demo{border-color:var(--g);}
+.canvas-box.live{border-color:var(--warn);}
+.canvas-box canvas, .canvas-box video{width:100%; height:100%; object-fit:cover; position:absolute; inset:0;}
+.canvas-label{position:absolute; top:6px; right:6px; background:rgba(0,0,0,.6); font-size:10px; padding:2px 8px; border-radius:8px; z-index:5;}
+#workoutMsg{background:var(--bg4); border-radius:10px; padding:10px; font-size:13px; text-align:center; color:var(--warn); min-height:20px; margin-bottom:10px;}
+.rep-display{text-align:center; margin:10px 0;}
+.rep-display .num{font-size:52px; font-weight:900; color:var(--g); line-height:1;}
+.rep-display .of{font-size:13px; color:var(--text2);}
+.set-dots{display:flex; justify-content:center; gap:6px; margin:8px 0;}
+.set-dot{width:9px; height:9px; border-radius:50%; background:var(--bg4);}
+.set-dot.done{background:var(--g);}
+.set-dot.cur{background:var(--warn);}
+.ex-name{text-align:center; font-size:17px; font-weight:800; margin-top:4px;}
+.ex-list{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin:10px 0;}
+.ex-chip{background:var(--bg4); padding:5px 10px; border-radius:20px; font-size:11px; color:var(--text2);}
+.ex-chip.cur{background:var(--g); color:#04140b; font-weight:700;}
+
+/* leaderboard */
+.sidebar-tabs{display:flex; gap:6px; overflow-x:auto; margin-bottom:12px; padding-bottom:2px;}
+.sbtab{flex-shrink:0; background:var(--bg3); border:1px solid var(--border); padding:8px 14px; border-radius:20px; font-size:13px; color:var(--text2);}
+.sbtab.active{background:var(--g); color:#04140b; border-color:var(--g); font-weight:700;}
+
+/* track */
+.track-wrap{display:flex; flex-direction:column-reverse; gap:0; padding:10px 0;}
+.track-node{display:flex; align-items:center; gap:10px; padding:10px 4px; position:relative;}
+.track-node:not(:last-child)::before{content:''; position:absolute; top:-2px; right:19px; width:2px; height:14px; background:var(--border);}
+.track-dot{width:40px; height:40px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:var(--text2); flex-shrink:0;}
+.track-dot.done{background:var(--g); color:#04140b;}
+.track-dot.cur{background:var(--warn); color:#04140b; box-shadow:0 0 0 4px rgba(255,171,64,.25);}
+.track-info{flex:1;}
+.track-info .t1{font-size:13px; font-weight:700;}
+.track-info .t2{font-size:11px; color:var(--text2);}
+
+/* profile */
+.avatar-big{width:76px; height:76px; border-radius:50%; background:var(--bg4); display:flex; align-items:center; justify-content:center; font-size:32px; margin:0 auto 10px;}
+.achv-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+.achv{background:var(--bg4); border-radius:12px; padding:10px 4px; text-align:center; font-size:20px; opacity:.3;}
+.achv.on{opacity:1;}
+.achv .an{font-size:9px; color:var(--text2); display:block; margin-top:3px;}
+
+/* group */
+.grp-card{display:flex; align-items:center; gap:12px;}
+.grp-emoji{font-size:30px;}
+.grp-code{background:var(--bg4); padding:4px 10px; border-radius:8px; font-size:12px; letter-spacing:2px; color:var(--g); font-weight:800;}
+
+/* modal */
+.modal{position:fixed; inset:0; background:rgba(0,0,0,.7); display:flex; align-items:flex-end; justify-content:center; z-index:100;}
+.modal-inner{width:100%; max-width:var(--maxw); background:var(--bg2); border-radius:20px 20px 0 0; padding:20px; max-height:85vh; overflow-y:auto;}
+.modal-inner h2{font-size:18px; margin-bottom:14px;}
+.modal-close{position:absolute; left:16px; top:16px;}
+.admin-row{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px;}
+.admin-row input{background:var(--bg3); border:1px solid var(--border); border-radius:6px; padding:6px 8px; color:var(--text); font-size:13px; width:100%;}
+.flag{font-size:16px;}
+</style>
+</head>
+<body>
+<div id="root">
+
+  <!-- AUTH SCREEN -->
+  <div id="authScreen">
+    <h1>FitQuest 💪</h1>
+    <div class="sub" data-t="sub">1000 שלבים. אימון אמיתי. AI שרואה אותך.</div>
+    <div id="authMsg"></div>
+    <div class="field">
+      <label data-t="username">שם משתמש</label>
+      <input id="authUser" type="text" autocomplete="username">
+    </div>
+    <div class="field">
+      <label data-t="password">סיסמה</label>
+      <input id="authPass" type="password" autocomplete="current-password">
+    </div>
+    <div class="row2 hidden" id="regExtra">
+      <div class="field">
+        <label data-t="country">מדינה</label>
+        <select id="authCountry"></select>
+      </div>
+      <div class="field">
+        <label data-t="language">שפה</label>
+        <select id="authLang"></select>
+      </div>
+    </div>
+    <button class="btn btn-g" id="authSubmit" data-t="loginBtn">התחבר</button>
+    <div id="authToggle" data-t="toRegister">אין לך חשבון? הרשם עכשיו</div>
+  </div>
+
+  <!-- APP -->
+  <div id="app" class="hidden">
+
+    <!-- HOME -->
+    <div class="page" id="tabHome">
+      <div class="topbar">
+        <div class="brand">FitQuest</div>
+        <button class="iconbtn" id="btnSettingsHome">⚙</button>
+      </div>
+      <div class="card">
+        <div class="stat-grid">
+          <div class="stat-box"><div class="v" id="hStage">1</div><div class="l" data-t="stage">שלב נוכחי</div></div>
+          <div class="stat-box"><div class="v" id="hReps">0</div><div class="l" data-t="totalReps">סה"כ חזרות</div></div>
+          <div class="stat-box"><div class="v" id="hStreak">0</div><div class="l" data-t="streak">רצף ימים</div></div>
+          <div class="stat-box"><div class="v" id="hXp">0</div><div class="l">XP</div></div>
+        </div>
+      </div>
+      <button class="big-btn" id="btnStartWorkout" data-t="start_workout">🔥 התחל אימון</button>
+      <div class="card">
+        <h3 data-t="world">🌍 עולמי — טופ 5</h3>
+        <div id="homeLB"></div>
+      </div>
+    </div>
+
+    <!-- WORKOUT -->
+    <div class="page hidden" id="tabWorkout">
+      <div class="topbar"><div class="brand" data-t="navWorkout">אימון</div><div></div></div>
+      <div id="wIdle">
+        <div class="card">
+          <h3><span data-t="todayWorkout">האימון של שלב</span> <span id="wStageNum">1</span></h3>
+          <div class="ex-list" id="wExList"></div>
+        </div>
+        <div class="card hidden" id="adminStagePicker">
+          <h3>בחר שלב (מנהל)</h3>
+          <input type="range" id="adminStageRange" min="1" max="1000" value="1" style="width:100%">
+          <div style="text-align:center; margin-top:6px;" id="adminStageVal">1</div>
+        </div>
+        <button class="big-btn" id="btnBeginSet">▶️ התחל</button>
+      </div>
+      <div id="wActive" class="hidden">
+        <div class="ex-name" id="curExName">-</div>
+        <div class="canvas-wrap">
+          <div class="canvas-box demo">
+            <span class="canvas-label" data-t="demo">דוגמא</span>
+            <canvas id="demoCanvas" width="240" height="320"></canvas>
+          </div>
+          <div class="canvas-box live">
+            <span class="canvas-label" data-t="you">את/ה</span>
+            <video id="camVideo" autoplay playsinline muted></video>
+            <canvas id="liveCanvas" width="240" height="320"></canvas>
+          </div>
+        </div>
+        <div id="workoutMsg"></div>
+        <div class="rep-display">
+          <div class="num" id="repNum">0</div>
+          <div class="of">/ <span id="repTarget">10</span> <span data-t="reps">חזרות</span></div>
+        </div>
+        <div class="set-dots" id="setDots"></div>
+        <button class="btn btn-outline" style="width:100%" id="btnStopWorkout" data-t="stop">עצור אימון</button>
+      </div>
+      <div id="wDone" class="hidden card" style="text-align:center;">
+        <div style="font-size:40px;">🏆</div>
+        <h3 data-t="stageComplete" style="font-size:18px; color:var(--g);">שלב הושלם!</h3>
+        <button class="big-btn" id="btnBackHome" data-t="great">מעולה</button>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="page hidden" id="tabBoard">
+      <div class="topbar"><div class="brand" data-t="navBoard">דירוג</div><div></div></div>
+      <div class="sidebar-tabs" id="sbTabs"></div>
+      <div id="sbContent"></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="page hidden" id="tabProfile">
+      <div class="topbar"><div class="brand" data-t="navProfile">פרופיל</div><button class="iconbtn" id="btnSettingsProfile">⚙</button></div>
+      <div class="avatar-big" id="pAvatar">🙂</div>
+      <div style="text-align:center; font-weight:800; font-size:18px;" id="pName">-</div>
+      <div style="text-align:center; color:var(--text2); font-size:13px; margin-bottom:14px;"><span id="pFlag"></span> <span id="pCountry"></span></div>
+      <div class="card">
+        <div class="stat-grid">
+          <div class="stat-box"><div class="v" id="pStage">1</div><div class="l" data-t="stage">שלב</div></div>
+          <div class="stat-box"><div class="v" id="pReps">0</div><div class="l" data-t="totalReps">סה"כ חזרות</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 data-t="achievements">🏅 הישגים</h3>
+        <div class="achv-grid" id="achvGrid"></div>
+      </div>
+      <button class="btn btn-g" style="width:100%; margin-bottom:10px;" id="btnShareWA" data-t="share_whatsapp">📱 שתף בוואצאפ</button>
+      <button class="btn btn-red" style="width:100%;" id="btnLogout" data-t="logout">התנתק</button>
+    </div>
+
+    <!-- GROUP -->
+    <div class="page hidden" id="tabGroup">
+      <div class="topbar"><div class="brand" data-t="navGroup">קבוצה</div><div></div></div>
+      <div id="grpNone">
+        <div class="card">
+          <h3 data-t="create_group">➕ צור קבוצה</h3>
+          <div class="row2">
+            <div class="field" style="flex:2"><input id="grpNameIn" placeholder="שם הקבוצה"></div>
+            <div class="field" style="flex:1"><select id="grpEmojiIn"></select></div>
+          </div>
+          <button class="btn btn-g" style="width:100%; margin-top:10px;" id="btnCreateGrp" data-t="create">צור</button>
+        </div>
+        <div class="card">
+          <h3 data-t="join_group">🔑 הצטרף לקבוצה</h3>
+          <div class="row2">
+            <div class="field" style="flex:2"><input id="grpCodeIn" placeholder="קוד 6 תווים" style="text-transform:uppercase"></div>
+            <div class="field" style="flex:1"><button class="btn btn-outline" style="width:100%; height:100%;" id="btnJoinGrp" data-t="join">הצטרף</button></div>
+          </div>
+        </div>
+      </div>
+      <div id="grpHas" class="hidden">
+        <div class="card grp-card">
+          <div class="grp-emoji" id="gEmoji">🏋️</div>
+          <div style="flex:1;">
+            <div style="font-weight:800;" id="gName">-</div>
+            <div class="grp-code" id="gCode">-</div>
+          </div>
+        </div>
+        <button class="btn btn-g" style="width:100%; margin-bottom:10px;" id="btnShareGrp" data-t="share_whatsapp">📱 שתף קוד בוואצאפ</button>
+        <div class="card">
+          <h3 data-t="members">👥 חברים</h3>
+          <div id="gMembers"></div>
+        </div>
+        <button class="btn btn-outline" style="width:100%;" id="btnLeaveGrp" data-t="leave_group">עזוב קבוצה</button>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <nav id="bottomNav">
+      <button class="navbtn active" data-tab="tabHome"><span class="ic">🏠</span><span data-t="navHome">בית</span></button>
+      <button class="navbtn" data-tab="tabWorkout"><span class="ic">🏋️</span><span data-t="navWorkout">אימון</span></button>
+      <button class="navbtn" data-tab="tabBoard"><span class="ic">🏆</span><span data-t="navBoard">דירוג</span></button>
+      <button class="navbtn" data-tab="tabProfile"><span class="ic">👤</span><span data-t="navProfile">פרופיל</span></button>
+      <button class="navbtn" data-tab="tabGroup"><span class="ic">👥</span><span data-t="navGroup">קבוצה</span></button>
+    </nav>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div class="modal hidden" id="settingsModal">
+    <div class="modal-inner" style="position:relative;">
+      <button class="iconbtn modal-close" id="btnCloseSettings">✕</button>
+      <h2 data-t="settings">הגדרות</h2>
+      <div class="field" style="margin-bottom:12px;">
+        <label data-t="language">שפה</label>
+        <select id="setLang"></select>
+      </div>
+      <div class="field" style="margin-bottom:16px;">
+        <label data-t="country">מדינה</label>
+        <select id="setCountry"></select>
+      </div>
+      <button class="btn btn-outline" style="width:100%; margin-bottom:10px;" id="btnOpenAdmin" data-t="admin">🛠 פאנל ניהול</button>
+      <button class="btn btn-red" style="width:100%;" id="btnLogout2" data-t="logout">התנתק</button>
+    </div>
+  </div>
+
+  <!-- ADMIN MODAL -->
+  <div class="modal hidden" id="adminModal">
+    <div class="modal-inner" style="position:relative;">
+      <button class="iconbtn modal-close" id="btnCloseAdmin">✕</button>
+      <h2 data-t="admin">🛠 פאנל ניהול</h2>
+      <input id="adminSearch" placeholder="חיפוש..." style="width:100%; background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); margin-bottom:12px;">
+      <div id="adminList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+<script>
+'use strict';
+/* =========================================================
+   FitQuest v9 — single file app
+   ========================================================= */
+
+/* ---------- i18n ---------- */
+const LANGS = {
+  he:'עברית', en:'English', ar:'العربية', ru:'Русский', fr:'Français', es:'Español',
+  pt:'Português', de:'Deutsch', it:'Italiano', tr:'Türkçe', uk:'Українська', pl:'Polski',
+  ro:'Română', am:'አማርኛ', hi:'हिन्दी', zh:'中文', ja:'日本語', th:'ไทย'
+};
+const RTL_LANGS = new Set(['he','ar']);
+const T = {
+  he:{sub:'1000 שלבים. אימון אמיתי. AI שרואה אותך.', username:'שם משתמש', password:'סיסמה', country:'מדינה', language:'שפה',
+    loginBtn:'התחבר', registerBtn:'הרשם', toRegister:'אין לך חשבון? הרשם עכשיו', toLogin:'כבר יש לך חשבון? התחבר',
+    navHome:'בית', navWorkout:'אימון', navBoard:'דירוג', navProfile:'פרופיל', navGroup:'קבוצה',
+    stage:'שלב נוכחי', totalReps:'סה"כ חזרות', streak:'רצף ימים', start_workout:'🔥 התחל אימון', world:'🌍 עולמי — טופ 5',
+    todayWorkout:'האימון של שלב', demo:'דוגמא', you:'את/ה', reps:'חזרות', stop:'עצור אימון', stageComplete:'שלב הושלם!', great:'מעולה',
+    achievements:'🏅 הישגים', share_whatsapp:'📱 שתף בוואצאפ', logout:'התנתק', settings:'הגדרות', admin:'🛠 פאנל ניהול',
+    create_group:'➕ צור קבוצה', create:'צור', join_group:'🔑 הצטרף לקבוצה', join:'הצטרף', members:'👥 חברים', leave_group:'עזוב קבוצה'},
+  en:{sub:'1000 stages. Real workouts. AI that sees you.', username:'Username', password:'Password', country:'Country', language:'Language',
+    loginBtn:'Log in', registerBtn:'Sign up', toRegister:"Don't have an account? Sign up", toLogin:'Already have an account? Log in',
+    navHome:'Home', navWorkout:'Workout', navBoard:'Board', navProfile:'Profile', navGroup:'Group',
+    stage:'Current stage', totalReps:'Total reps', streak:'Day streak', start_workout:'🔥 Start Workout', world:'🌍 World — Top 5',
+    todayWorkout:'Workout for stage', demo:'Demo', you:'You', reps:'reps', stop:'Stop workout', stageComplete:'Stage complete!', great:'Great',
+    achievements:'🏅 Achievements', share_whatsapp:'📱 Share on WhatsApp', logout:'Log out', settings:'Settings', admin:'🛠 Admin panel',
+    create_group:'➕ Create group', create:'Create', join_group:'🔑 Join group', join:'Join', members:'👥 Members', leave_group:'Leave group'},
+};
+function tr(lang, key){ return (T[lang]&&T[lang][key]) || T.he[key] || key; }
+function applyLang(lang){
+  document.documentElement.lang = lang;
+  document.documentElement.dir = RTL_LANGS.has(lang) ? 'rtl' : 'ltr';
+  document.querySelectorAll('[data-t]').forEach(el=>{
+    const k = el.getAttribute('data-t');
+    el.textContent = tr(lang, k);
+  });
+}
+
+/* ---------- countries ---------- */
+const COUNTRIES = [
+  ['IL','🇮🇱','ישראל'],['US','🇺🇸','ארה"ב'],['RU','🇷🇺','רוסיה'],['FR','🇫🇷','צרפת'],['UA','🇺🇦','אוקראינה'],
+  ['ET','🇪🇹','אתיופיה'],['MA','🇲🇦','מרוקו'],['AR','🇦🇷','ארגנטינה'],['BR','🇧🇷','ברזיל'],['DE','🇩🇪','גרמניה'],
+  ['GB','🇬🇧','בריטניה'],['CA','🇨🇦','קנדה'],['AU','🇦🇺','אוסטרליה'],['PL','🇵🇱','פולין'],['RO','🇷🇴','רומניה'],
+  ['GE','🇬🇪','גאורגיה'],['UZ','🇺🇿','אוזבקיסטן'],['IN','🇮🇳','הודו'],['CN','🇨🇳','סין'],['JP','🇯🇵','יפן'],
+  ['TH','🇹🇭','תאילנד'],['TR','🇹🇷','תורכיה'],['IT','🇮🇹','איטליה'],['ES','🇪🇸','ספרד'],['PT','🇵🇹','פורטוגל'],
+  ['NL','🇳🇱','הולנד'],['BE','🇧🇪','בלגיה'],['ZA','🇿🇦','דרום אפריקה'],['MX','🇲🇽','מקסיקו'],['YE','🇾🇪','תימן']
+];
+function countryFlag(code){ const c = COUNTRIES.find(c=>c[0]===code); return c?c[1]:'🏳️'; }
+function countryName(code){ const c = COUNTRIES.find(c=>c[0]===code); return c?c[2]:code; }
+function fillSelect(sel, opts, valueFn, labelFn){
+  sel.innerHTML = opts.map(o=>`<option value="${valueFn(o)}">${labelFn(o)}</option>`).join('');
+}
+
+/* ---------- storage ---------- */
+const DB_KEY='fq_v9', SESS_KEY='fq_v9s', GRP_KEY='fq_grp';
+function loadDB(){ try{ return JSON.parse(localStorage.getItem(DB_KEY))||{users:{}}; }catch(e){ return {users:{}}; } }
+function saveDB(db){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+function loadSess(){ try{ return JSON.parse(localStorage.getItem(SESS_KEY)); }catch(e){ return null; } }
+function saveSess(s){ localStorage.setItem(SESS_KEY, JSON.stringify(s)); }
+function loadGrp(){ try{ return JSON.parse(localStorage.getItem(GRP_KEY))||{groups:{}}; }catch(e){ return {groups:{}}; } }
+function saveGrp(g){ localStorage.setItem(GRP_KEY, JSON.stringify(g)); }
+
+const ADMIN_NAME = 'tom yitzhaki';
+function ensureSeed(){
+  const db = loadDB();
+  if(!db.users[ADMIN_NAME]){
+    db.users[ADMIN_NAME] = newUserRecord('tom yitzhaki','123456789','IL','he');
+    db.users[ADMIN_NAME].isAdmin = true;
+    db.users[ADMIN_NAME].stage = 1000;
+    saveDB(db);
+  }
+  return db;
+}
+function newUserRecord(username,password,country,lang){
+  return {
+    username, password, country, lang, stage:1, xp:0,
+    stats:{pushups:0, squats:0, situps:0, other:0, totalReps:0, workouts:0, plankSeconds:0},
+    challengePr:0, groupId:null, lastWorkoutDate:null, streak:0, createdAt:Date.now(), isAdmin:false
+  };
+}
+
+/* ---------- auth ---------- */
+let CUR_USER = null; // in-memory copy of the logged-in user's record (key = lowercase username)
+let CUR_KEY = null;
+
+function findUserKey(db, name){
+  const lower = name.trim().toLowerCase();
+  return Object.keys(db.users).find(k=>k.toLowerCase()===lower) || null;
+}
+function doRegister(name, pass, country, lang){
+  name = name.trim();
+  if(!name || !pass) return tr(lang,'username')+'/'+tr(lang,'password')+' ?';
+  const db = ensureSeed();
+  if(findUserKey(db, name)) return 'שם המשתמש כבר תפוס';
+  const key = name;
+  db.users[key] = newUserRecord(name, pass, country, lang);
+  if(name.toLowerCase()===ADMIN_NAME){ db.users[key].isAdmin=true; db.users[key].stage=1000; db.users[key].password = pass; }
+  saveDB(db);
+  saveSess({username:key});
+  return null;
+}
+function doLogin(name, pass){
+  const db = ensureSeed();
+  const key = findUserKey(db, name);
+  if(!key) return 'משתמש לא נמצא';
+  if(db.users[key].password !== pass) return 'סיסמה שגויה';
+  saveSess({username:key});
+  return null;
+}
+function doLogout(){
+  localStorage.removeItem(SESS_KEY);
+  CUR_USER = null; CUR_KEY = null;
+  location.reload();
+}
+function persistCurUser(){ const db=loadDB(); db.users[CUR_KEY]=CUR_USER; saveDB(db); }
+
+/* ---------- exercise / tier system ---------- */
+const EX = {
+  pushup_reg:{name:'שכיבות סמיכה רגילות', cat:'pushups'},
+  squat_reg:{name:'סקוואטים רגילים', cat:'squats'},
+  situp:{name:'כפיפות בטן', cat:'situps'},
+  pushup_wide:{name:'שכיבות רחבות', cat:'pushups'},
+  lunge:{name:"לאנג'ים", cat:'other'},
+  bicycle:{name:'כפיפות אופניים', cat:'situps'},
+  plank:{name:'פלאנק', cat:'other'},
+  pushup_close:{name:'שכיבות צמודות', cat:'pushups'},
+  pike:{name:'פייק', cat:'other'},
+  squat_jump:{name:'סקוואטים קפיצה', cat:'squats'},
+  legraise:{name:'הרמות רגליים', cat:'situps'},
+  mountain:{name:'טיפוס הר', cat:'other'},
+  diamond:{name:'יהלום', cat:'pushups'},
+  lunge_jump:{name:"לאנג'ים קפיצה", cat:'other'},
+  bulgarian:{name:'סקוואטים בולגריים', cat:'squats'},
+  vup:{name:'V-ups', cat:'situps'},
+  burpee:{name:'בורפי', cat:'other'},
+  archer:{name:"ארצ'ר", cat:'pushups'},
+  pistol:{name:'סקוואטים חד-רגל', cat:'squats'}
+};
+const TIERS = [
+  {min:1,   add:['pushup_reg','squat_reg','situp']},
+  {min:10,  add:['pushup_wide','lunge','bicycle','plank']},
+  {min:30,  add:['pushup_close','pike','squat_jump','legraise','mountain']},
+  {min:80,  add:['diamond','lunge_jump','bulgarian','vup','burpee']},
+  {min:200, add:['archer','pistol']}
+];
+function unlockedPool(stage){
+  let pool = [];
+  TIERS.forEach(t=>{ if(stage>=t.min) pool = pool.concat(t.add); });
+  return pool;
+}
+function numExercisesFor(stage){ return stage<20?2 : stage<200?3 : 4; }
+function numSetsFor(stage){ return Math.max(2, Math.min(6, 2+Math.floor(stage/250))); }
+function repsFor(stage, exId){
+  let base = Math.round(8 + 11*Math.log10(stage+1));
+  const hard = new Set(['diamond','archer','pistol','burpee','vup','lunge_jump','squat_jump','pike']);
+  if(hard.has(exId)) base = Math.round(base*0.65);
+  return Math.max(5, Math.min(40, base));
+}
+function pickExercises(stage){
+  const pool = unlockedPool(stage);
+  const n = numExercisesFor(stage);
+  const start = stage % pool.length;
+  const step = Math.max(1, Math.floor(pool.length/n));
+  let chosen = [];
+  for(let i=0;i<pool.length && chosen.length<n;i++){
+    const cand = pool[(start+i*step)%pool.length];
+    if(!chosen.includes(cand)) chosen.push(cand);
+  }
+  for(let i=0;i<pool.length && chosen.length<n;i++){
+    const cand = pool[(start+i)%pool.length];
+    if(!chosen.includes(cand)) chosen.push(cand);
+  }
+  return chosen;
+}
+function buildWorkout(stage){
+  const exIds = pickExercises(stage);
+  const sets = numSetsFor(stage);
+  return { stage, sets, exercises: exIds.map(id=>({id, reps:repsFor(stage,id)})) };
+}
+
+/* ---------- geometry ---------- */
+function angleDeg(A,B,C){
+  const v1x=A.x-B.x, v1y=A.y-B.y, v2x=C.x-B.x, v2y=C.y-B.y;
+  const dot = v1x*v2x+v1y*v2y;
+  const m1 = Math.hypot(v1x,v1y), m2=Math.hypot(v2x,v2y);
+  if(m1===0||m2===0) return 0;
+  let cos = dot/(m1*m2);
+  cos = Math.max(-1,Math.min(1,cos));
+  return Math.acos(cos)*180/Math.PI;
+}
+const LM = {NOSE:0, LSH:11, RSH:12, LEL:13, REL:14, LWR:15, RWR:16, LHIP:23, RHIP:24, LKNEE:25, RKNEE:26, LANK:27, RANK:28, LHEEL:29, RHEEL:30};
+function vis(lm,i){ return lm && lm[i] ? (lm[i].visibility||0) : 0; }
+function avgPt(lm,i,j){
+  const a=lm[i], b=lm[j];
+  const va=vis(lm,i), vb=vis(lm,j);
+  if(va>0.5 && vb>0.5) return {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
+  if(va>0.5) return a;
+  if(vb>0.5) return b;
+  return {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
+}
+function bodyVisible(lm){
+  return (vis(lm,LM.LSH)+vis(lm,LM.RSH)+vis(lm,LM.LHIP)+vis(lm,LM.RHIP))/4 > 0.5;
+}
+function heelsVisible(lm){
+  return vis(lm,LM.LANK)>0.5 && vis(lm,LM.RANK)>0.5;
+}
+
+/* ---------- rep detectors ---------- */
+const REP_GAP = 700;
+class BaseDetector{
+  constructor(){ this.reset(); }
+  reset(){ this.phase='wait'; this.lastRepTime=0; this.msg=''; }
+  canCount(now){ return now-this.lastRepTime >= REP_GAP; }
+  countRep(now){ this.lastRepTime=now; return true; }
+}
+class PushupDetector extends BaseDetector{
+  update(lm, now){
+    this.msg='';
+    if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
+    if(!heelsVisible(lm)){ this.msg='יש למקם את המצלמה כך שהעקבים נראים'; return false; }
+    const shoulder = avgPt(lm,LM.LSH,LM.RSH), elbow = avgPt(lm,LM.LEL,LM.REL), wrist = avgPt(lm,LM.LWR,LM.RWR);
+    const heel = avgPt(lm,LM.LANK,LM.RANK), knee = avgPt(lm,LM.LKNEE,LM.RKNEE);
+    const elbowAngle = angleDeg(shoulder, elbow, wrist);
+    const kneesUp = knee.y < heel.y - 0.06;
+    const horizontal = Math.abs(shoulder.y-heel.y) < 0.28;
+    if(!kneesUp){ this.msg='ישרו את הברכיים — לא בכריעה'; return false; }
+    if(!horizontal){ this.msg='שמרו על גוף אופקי'; return false; }
+    let counted=false;
+    if(this.phase!=='down' && elbowAngle<105) this.phase='down';
+    else if(this.phase==='down' && elbowAngle>150){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && elbowAngle>150) this.phase='up';
+    return counted;
+  }
+}
+class SquatDetector extends BaseDetector{
+  update(lm, now){
+    this.msg='';
+    if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
+    if(!heelsVisible(lm)){ this.msg='הרחק/י את הטלפון כדי לראות את כל הגוף'; return false; }
+    const shoulder = avgPt(lm,LM.LSH,LM.RSH), hip = avgPt(lm,LM.LHIP,LM.RHIP);
+    const knee = avgPt(lm,LM.LKNEE,LM.RKNEE), heel = avgPt(lm,LM.LANK,LM.RANK);
+    const kneeAngle = angleDeg(hip, knee, heel);
+    const standing = shoulder.y < hip.y;
+    if(!standing){ this.msg='עמדו זקוף/ה'; return false; }
+    const totalH = (heel.y-shoulder.y)||1;
+    const depth = (hip.y-shoulder.y)/totalH;
+    let counted=false;
+    if(this.phase!=='down' && kneeAngle<115 && depth>0.58) this.phase='down';
+    else if(this.phase==='down' && kneeAngle>163){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && kneeAngle>163) this.phase='up';
+    return counted;
+  }
+}
+class SitupDetector extends BaseDetector{
+  update(lm, now){
+    this.msg='';
+    if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
+    const shoulder = avgPt(lm,LM.LSH,LM.RSH), hip = avgPt(lm,LM.LHIP,LM.RHIP);
+    const diff = hip.y - shoulder.y;
+    let counted=false;
+    if(this.phase!=='up' && diff>0.12) this.phase='up';
+    else if(this.phase==='up' && diff<0.04){ this.phase='down'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && diff<0.04) this.phase='down';
+    return counted;
+  }
+}
+class PlankDetector extends BaseDetector{
+  reset(){ super.reset(); this.holdMs=0; this.lastTick=0; }
+  update(lm, now){
+    this.msg='';
+    if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
+    const shoulder = avgPt(lm,LM.LSH,LM.RSH), hip = avgPt(lm,LM.LHIP,LM.RHIP);
+    const straight = Math.abs(shoulder.y-hip.y) < 0.15;
+    if(!straight){ this.msg='ישרו את הגב'; this.lastTick=0; return false; }
+    if(!this.lastTick) this.lastTick = now;
+    const dt = now-this.lastTick; this.lastTick = now;
+    this.holdMs += dt;
+    if(this.holdMs >= 1000){ this.holdMs -= 1000; return true; }
+    return false;
+  }
+}
+class BurpeeDetector extends BaseDetector{
+  update(lm, now){
+    this.msg='';
+    if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
+    const shoulder = avgPt(lm,LM.LSH,LM.RSH);
+    let counted=false;
+    if(this.phase!=='down' && shoulder.y>0.55) this.phase='down';
+    else if(this.phase==='down' && shoulder.y<0.42){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && shoulder.y<0.42) this.phase='up';
+    return counted;
+  }
+}
+class GenericSquatLikeDetector extends SquatDetector{}
+class GenericPushupLikeDetector extends PushupDetector{}
+class GenericSitupLikeDetector extends SitupDetector{}
+function makeDetector(exId){
+  const cat = EX[exId] ? EX[exId].cat : 'other';
+  if(exId==='plank') return new PlankDetector();
+  if(exId==='burpee') return new BurpeeDetector();
+  if(cat==='pushups') return new GenericPushupLikeDetector();
+  if(cat==='squats') return new GenericSquatLikeDetector();
+  if(cat==='situps') return new GenericSitupLikeDetector();
+  return new GenericSquatLikeDetector();
+}
+
+/* ---------- stick figure demo animation ---------- */
+function lerp(a,b,t){ return a+(b-a)*t; }
+function lerpPt(a,b,t){ return {x:lerp(a[0],b[0],t), y:lerp(a[1],b[1],t)}; }
+function lerpFrame(fa,fb,t){
+  const out={};
+  for(const k in fa) out[k]=lerpPt(fa[k],fb[k],t);
+  return out;
+}
+const HUMAN_FRAMES = {
+  pushup:[
+    {head:[.16,.36],shoulder:[.27,.40],elbow:[.30,.53],hand:[.31,.60],hip:[.55,.42],knee:[.72,.50],ankle:[.85,.55]},
+    {head:[.16,.50],shoulder:[.27,.52],elbow:[.33,.55],hand:[.34,.60],hip:[.55,.53],knee:[.72,.58],ankle:[.85,.60]}
+  ],
+  squat:[
+    {head:[.5,.14],shoulder:[.5,.25],elbow:[.42,.38],hand:[.4,.5],hip:[.5,.48],knee:[.5,.65],ankle:[.5,.82]},
+    {head:[.5,.32],shoulder:[.5,.42],elbow:[.36,.48],hand:[.56,.55],hip:[.5,.62],knee:[.4,.65],ankle:[.5,.82]}
+  ],
+  situp:[
+    {head:[.15,.55],shoulder:[.28,.55],elbow:[.2,.5],hand:[.18,.48],hip:[.55,.55],knee:[.72,.48],ankle:[.85,.58]},
+    {head:[.35,.35],shoulder:[.4,.42],elbow:[.5,.42],hand:[.55,.45],hip:[.55,.55],knee:[.72,.48],ankle:[.85,.58]}
+  ],
+  plank:[
+    {head:[.16,.40],shoulder:[.28,.42],elbow:[.28,.53],hand:[.28,.60],hip:[.55,.45],knee:[.72,.50],ankle:[.85,.52]},
+    {head:[.16,.41],shoulder:[.28,.43],elbow:[.28,.54],hand:[.28,.61],hip:[.55,.46],knee:[.72,.51],ankle:[.85,.53]}
+  ],
+  burpee:[
+    {head:[.5,.14],shoulder:[.5,.25],elbow:[.44,.35],hand:[.42,.45],hip:[.5,.48],knee:[.5,.65],ankle:[.5,.82]},
+    {head:[.18,.42],shoulder:[.28,.44],elbow:[.28,.55],hand:[.28,.62],hip:[.55,.48],knee:[.72,.55],ankle:[.85,.58]},
+    {head:[.16,.50],shoulder:[.28,.52],elbow:[.33,.55],hand:[.34,.6],hip:[.55,.53],knee:[.72,.58],ankle:[.85,.6]},
+    {head:[.5,.06],shoulder:[.5,.20],elbow:[.5,.10],hand:[.5,.02],hip:[.5,.44],knee:[.5,.62],ankle:[.5,.80]}
+  ]
+};
+function animKeyFor(exId){
+  if(exId==='plank') return 'plank';
+  if(exId==='burpee') return 'burpee';
+  const cat = EX[exId] ? EX[exId].cat : 'other';
+  if(cat==='pushups') return 'pushup';
+  if(cat==='squats') return 'squat';
+  if(cat==='situps') return 'situp';
+  return 'squat';
+}
+function drawHuman(ctx,W,H,f,color){
+  ctx.clearRect(0,0,W,H);
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineCap='round'; ctx.lineJoin='round';
+  const P = k=>({x:f[k].x*W, y:f[k].y*H});
+  const head=P('head'), shoulder=P('shoulder'), elbow=P('elbow'), hand=P('hand'), hip=P('hip'), knee=P('knee'), ankle=P('ankle');
+  ctx.lineWidth = W*0.045;
+  function seg(a,b){ ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
+  seg(shoulder,hip); seg(shoulder,elbow); seg(elbow,hand); seg(hip,knee); seg(knee,ankle);
+  const r = W*0.09;
+  ctx.beginPath(); ctx.arc(head.x,head.y,r,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#062'; ctx.beginPath(); ctx.arc(head.x-r*0.3,head.y-r*0.1,r*0.12,0,Math.PI*2); ctx.arc(head.x+r*0.3,head.y-r*0.1,r*0.12,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#062'; ctx.lineWidth=r*0.15;
+  ctx.beginPath(); ctx.arc(head.x,head.y+r*0.15,r*0.35,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  ctx.fillStyle='#ffab40';
+  ctx.beginPath(); ctx.arc(ankle.x,ankle.y,W*0.035,0,Math.PI*2); ctx.fill();
+}
+function drawGrid(ctx,W,H,color){
+  ctx.strokeStyle=color; ctx.globalAlpha=.08; ctx.lineWidth=1;
+  for(let x=0;x<=W;x+=W/8){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<=H;y+=H/8){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+  ctx.globalAlpha=1;
+}
+function startAnim(canvas, type, color, onFrame){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const frames = HUMAN_FRAMES[type] || HUMAN_FRAMES.squat;
+  const CYCLE = 1600 * frames.length/2;
+  let raf, running=true;
+  const t0 = performance.now();
+  function loop(now){
+    if(!running) return;
+    const el = (now-t0) % CYCLE;
+    const segLen = CYCLE/frames.length;
+    const idx = Math.floor(el/segLen);
+    const nextIdx = (idx+1)%frames.length;
+    const localT = (el%segLen)/segLen;
+    const frame = lerpFrame(frames[idx], frames[nextIdx], localT);
+    drawGrid(ctx,W,H,'#00e676');
+    drawHuman(ctx,W,H,frame,color);
+    if(onFrame) onFrame(idx,localT);
+    raf = requestAnimationFrame(loop);
+  }
+  raf = requestAnimationFrame(loop);
+  return function stop(){ running=false; if(raf) cancelAnimationFrame(raf); };
+}
+
+/* ---------- pose connections for live skeleton ---------- */
+const POSE_CONN = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28],[27,29],[29,31],[28,30],[30,32]];
+function drawLiveSkeleton(ctx,W,H,lm){
+  ctx.clearRect(0,0,W,H);
+  drawGrid(ctx,W,H,'#ffab40');
+  if(!lm) return;
+  ctx.strokeStyle='#ffab40'; ctx.lineWidth=W*0.02;
+  POSE_CONN.forEach(([a,b])=>{
+    if(vis(lm,a)>0.4 && vis(lm,b)>0.4){
+      ctx.beginPath(); ctx.moveTo(lm[a].x*W, lm[a].y*H); ctx.lineTo(lm[b].x*W, lm[b].y*H); ctx.stroke();
+    }
+  });
+  [27,28,29,30].forEach(i=>{
+    if(vis(lm,i)>0.4){ ctx.fillStyle='#ffab40'; ctx.beginPath(); ctx.arc(lm[i].x*W, lm[i].y*H, W*0.025,0,Math.PI*2); ctx.fill(); }
+  });
+  ctx.fillStyle='#fff';
+  for(let i=0;i<33;i++){ if(vis(lm,i)>0.4){ ctx.beginPath(); ctx.arc(lm[i].x*W, lm[i].y*H, W*0.012,0,Math.PI*2); ctx.fill(); } }
+}
+
+/* ---------- max challenge ---------- */
+const CHALLENGE_SEQ = ['pushup_reg','squat_reg','situp'];
+
+/* ---------- achievements (derived, not stored) ---------- */
+const ACHV_DEFS = [
+  {id:'w1', ic:'🥉', min:1, kind:'workouts'},
+  {id:'w10', ic:'🥈', min:10, kind:'workouts'},
+  {id:'w50', ic:'🥇', min:50, kind:'workouts'},
+  {id:'r100', ic:'💯', min:100, kind:'totalReps'},
+  {id:'r1000', ic:'🔥', min:1000, kind:'totalReps'},
+  {id:'r5000', ic:'⚡', min:5000, kind:'totalReps'},
+  {id:'s10', ic:'🎖', min:10, kind:'stage'},
+  {id:'s100', ic:'🏅', min:100, kind:'stage'},
+  {id:'s500', ic:'🏆', min:500, kind:'stage'},
+  {id:'s1000', ic:'👑', min:1000, kind:'stage'},
+  {id:'streak3', ic:'📆', min:3, kind:'streak'},
+  {id:'streak7', ic:'🌟', min:7, kind:'streak'},
+  {id:'cr5', ic:'🎯', min:5, kind:'challengePr'},
+  {id:'cr20', ic:'🚀', min:20, kind:'challengePr'},
+];
+function computeAchievements(u){
+  return ACHV_DEFS.map(a=>{
+    let val = a.kind==='workouts'?u.stats.workouts : a.kind==='totalReps'?u.stats.totalReps : a.kind==='stage'?u.stage : a.kind==='streak'?u.streak : u.challengePr;
+    return {...a, on: val>=a.min};
+  });
+}
+
+/* ---------- app state ---------- */
+let curTab='tabHome';
+let mpPose=null, mpCamera=null, stream=null;
+let curLandmarks=null;
+let workout=null; // {stage,sets,exercises:[{id,reps}]}
+let wIdxEx=0, wIdxSet=0, wReps=0, wDetector=null, wStopDemo=null;
+let inMaxChallenge=false, mcSeqIdx=0, mcRounds=0;
+
+function $(id){ return document.getElementById(id); }
+
+function initSelectors(){
+  fillSelect($('authCountry'), COUNTRIES, c=>c[0], c=>`${c[1]} ${c[2]}`);
+  fillSelect($('authLang'), Object.keys(LANGS), k=>k, k=>LANGS[k]);
+  fillSelect($('setCountry'), COUNTRIES, c=>c[0], c=>`${c[1]} ${c[2]}`);
+  fillSelect($('setLang'), Object.keys(LANGS), k=>k, k=>LANGS[k]);
+  fillSelect($('grpEmojiIn'), ['🏋️','💪','🔥','⚡','🏆','🎯','🚴','🏃'], e=>e, e=>e);
+}
+
+/* ---------- home ---------- */
+function renderHome(){
+  $('hStage').textContent = CUR_USER.stage;
+  $('hReps').textContent = CUR_USER.stats.totalReps;
+  $('hStreak').textContent = CUR_USER.streak;
+  $('hXp').textContent = CUR_USER.xp;
+  const db = loadDB();
+  const top = Object.values(db.users).sort((a,b)=>b.stage-a.stage).slice(0,5);
+  $('homeLB').innerHTML = top.map((u,i)=>`
+    <div class="lb-row"><span class="lb-rank top${i+1}">${i+1}</span>
+      <span class="flag">${countryFlag(u.country)}</span>
+      <span class="lb-name">${escapeHtml(u.username)}</span>
+      <span class="lb-val">${tr(CUR_USER.lang,'stage')} ${u.stage}</span></div>`).join('') || '<div style="color:var(--text2);font-size:13px;">אין עדיין משתמשים</div>';
+}
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- workout ---------- */
+function renderWorkoutIdle(){
+  $('wActive').classList.add('hidden');
+  $('wDone').classList.add('hidden');
+  $('wIdle').classList.remove('hidden');
+  const stage = CUR_USER.isAdmin ? Number($('adminStageRange').value||CUR_USER.stage) : CUR_USER.stage;
+  $('wStageNum').textContent = stage;
+  workout = buildWorkout(stage);
+  $('wExList').innerHTML = workout.exercises.map(e=>`<span class="ex-chip">${EX[e.id].name} · ${e.reps}×${workout.sets}</span>`).join('');
+  const picker = $('adminStagePicker');
+  if(CUR_USER.isAdmin){
+    picker.classList.remove('hidden');
+    $('adminStageRange').value = CUR_USER.stage;
+    $('adminStageVal').textContent = CUR_USER.stage;
+  } else {
+    picker.classList.add('hidden');
+  }
+}
+function startWorkoutSession(){
+  wIdxEx=0; wIdxSet=0; wReps=0;
+  $('wIdle').classList.add('hidden');
+  $('wDone').classList.add('hidden');
+  $('wActive').classList.remove('hidden');
+  loadExercise();
+  ensureCamera();
+}
+function loadExercise(){
+  const ex = workout.exercises[wIdxEx];
+  wDetector = makeDetector(ex.id);
+  wReps=0;
+  $('curExName').textContent = EX[ex.id].name;
+  $('repTarget').textContent = ex.id==='plank' ? ex.reps+'s' : ex.reps;
+  $('repNum').textContent = 0;
+  renderSetDots();
+  if(wStopDemo) wStopDemo();
+  wStopDemo = startAnim($('demoCanvas'), animKeyFor(ex.id), '#00e676');
+}
+function renderSetDots(){
+  const dots=[];
+  for(let i=0;i<workout.sets;i++){
+    let cls='set-dot';
+    if(i<wIdxSet) cls+=' done'; else if(i===wIdxSet) cls+=' cur';
+    dots.push(`<span class="${cls}"></span>`);
+  }
+  $('setDots').innerHTML = dots.join('');
+}
+function onRepCounted(){
+  const ex = workout.exercises[wIdxEx];
+  wReps++;
+  $('repNum').textContent = wReps;
+  CUR_USER.stats.totalReps++;
+  CUR_USER.xp += 2;
+  const cat = EX[ex.id].cat;
+  if(cat==='pushups') CUR_USER.stats.pushups++;
+  else if(cat==='squats') CUR_USER.stats.squats++;
+  else if(cat==='situps') CUR_USER.stats.situps++;
+  else CUR_USER.stats.other++;
+  persistCurUser();
+  if(wReps>=ex.reps){
+    wIdxSet++;
+    if(wIdxSet>=workout.sets){
+      wIdxEx++;
+      wIdxSet=0;
+      if(wIdxEx>=workout.exercises.length){ finishWorkout(); return; }
+    }
+    loadExercise();
+  }
+}
+function finishWorkout(){
+  stopCamera();
+  if(wStopDemo){ wStopDemo(); wStopDemo=null; }
+  $('wActive').classList.add('hidden');
+  $('wDone').classList.remove('hidden');
+  CUR_USER.stats.workouts++;
+  const today = new Date().toDateString();
+  if(CUR_USER.lastWorkoutDate !== today){
+    const yesterday = new Date(Date.now()-86400000).toDateString();
+    CUR_USER.streak = (CUR_USER.lastWorkoutDate===yesterday) ? CUR_USER.streak+1 : 1;
+    CUR_USER.lastWorkoutDate = today;
+  }
+  if(!CUR_USER.isAdmin && workout.stage===CUR_USER.stage && CUR_USER.stage<1000){ CUR_USER.stage++; }
+  CUR_USER.xp += 20;
+  persistCurUser();
+}
+function stopWorkoutEarly(){
+  stopCamera();
+  if(wStopDemo){ wStopDemo(); wStopDemo=null; }
+  renderWorkoutIdle();
+}
+
+/* ---------- camera / mediapipe ---------- */
+async function ensureCamera(){
+  const video = $('camVideo');
+  if(mpCamera) return;
+  try{
+    if(typeof Pose==='undefined' || typeof Camera==='undefined'){
+      $('workoutMsg').textContent = 'לא ניתן לטעון את מנוע ה-AI (בדקו חיבור אינטרנט)';
+      return;
+    }
+    mpPose = new Pose({locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
+    mpPose.setOptions({modelComplexity:1, smoothLandmarks:true, minDetectionConfidence:0.5, minTrackingConfidence:0.5});
+    mpPose.onResults(onPoseResults);
+    mpCamera = new Camera(video, {
+      onFrame: async ()=>{ await mpPose.send({image:video}); },
+      width:240, height:320
+    });
+    await mpCamera.start();
+  }catch(e){
+    $('workoutMsg').textContent = 'לא ניתן לגשת למצלמה: ' + (e && e.message ? e.message : e);
+  }
+}
+function stopCamera(){
+  try{ if(mpCamera){ mpCamera.stop(); } }catch(e){}
+  mpCamera=null; mpPose=null; curLandmarks=null;
+}
+function onPoseResults(results){
+  curLandmarks = results.poseLandmarks || null;
+  const liveCanvas = $('liveCanvas');
+  drawLiveSkeleton(liveCanvas.getContext('2d'), liveCanvas.width, liveCanvas.height, curLandmarks);
+  if(!curLandmarks || !workout) return;
+  const livePts = curLandmarks.filter(p=>p.visibility>0.5).length;
+  if(livePts<3) return;
+  const now = performance.now();
+  if(inMaxChallenge){
+    handleChallengeFrame(curLandmarks, now);
+    return;
+  }
+  if(!wDetector) return;
+  const counted = wDetector.update(curLandmarks, now);
+  $('workoutMsg').textContent = wDetector.msg || '';
+  if(counted) onRepCounted();
+}
+
+/* ---------- leaderboard / sidebar ---------- */
+const SB_TABS = [
+  {id:'world', label:'עולמי'}, {id:'national', label:'ארצי'}, {id:'challenge', label:'אתגר'},
+  {id:'stages', label:'שלבים'}, {id:'track', label:'מסלול'}
+];
+let curSb='world';
+function renderBoard(){
+  $('sbTabs').innerHTML = SB_TABS.map(t=>`<button class="sbtab ${t.id===curSb?'active':''}" data-sb="${t.id}">${t.label}</button>`).join('');
+  $('sbTabs').querySelectorAll('.sbtab').forEach(b=>b.onclick=()=>{ curSb=b.dataset.sb; renderBoard(); });
+  const db = loadDB();
+  const users = Object.values(db.users);
+  let html='';
+  if(curSb==='world' || curSb==='national'){
+    let list = users.slice();
+    if(curSb==='national') list = list.filter(u=>u.country===CUR_USER.country);
+    list.sort((a,b)=>b.stage-a.stage || b.xp-a.xp);
+    html = '<div class="card">' + (list.slice(0,50).map((u,i)=>`
+      <div class="lb-row"><span class="lb-rank top${i+1}">${i+1}</span>
+        <span class="flag">${countryFlag(u.country)}</span>
+        <span class="lb-name">${escapeHtml(u.username)}</span>
+        <span class="lb-val">שלב ${u.stage}</span></div>`).join('') || '<div style="color:var(--text2);">אין נתונים</div>') + '</div>';
+  } else if(curSb==='challenge'){
+    let list = users.filter(u=>u.challengePr>0).sort((a,b)=>b.challengePr-a.challengePr);
+    html = '<div class="card"><h3>🎯 שיאי אתגר מקסימום (סיבובים)</h3>' + (list.slice(0,50).map((u,i)=>`
+      <div class="lb-row"><span class="lb-rank top${i+1}">${i+1}</span>
+        <span class="flag">${countryFlag(u.country)}</span>
+        <span class="lb-name">${escapeHtml(u.username)}</span>
+        <span class="lb-val">${u.challengePr} סיבובים</span></div>`).join('') || '<div style="color:var(--text2);">אין שיאים עדיין</div>');
+    html += `</div><button class="big-btn" id="btnStartChallenge">⚔️ התחל אתגר מקסימום</button>`;
+  } else if(curSb==='stages'){
+    const tiersInfo = TIERS.map(t=>`<div class="lb-row"><span class="lb-name">שלב ${t.min}+</span><span class="lb-val">${t.add.map(id=>EX[id].name).join(', ')}</span></div>`).join('');
+    html = `<div class="card"><h3>השלב שלך: ${CUR_USER.stage} / 1000</h3>
+      <div style="background:var(--bg4);border-radius:8px;height:10px;overflow:hidden;margin:10px 0;">
+        <div style="background:var(--g);height:100%;width:${CUR_USER.stage/10}%;"></div>
+      </div>
+      <div style="font-size:12px;color:var(--text2);">תרגילים פתוחים כרגע: ${unlockedPool(CUR_USER.stage).length}</div>
+    </div><div class="card"><h3>פתיחת תרגילים לפי שלב</h3>${tiersInfo}</div>`;
+  } else if(curSb==='track'){
+    const milestones=[1,10,30,80,200,1000];
+    html = '<div class="card"><div class="track-wrap">' + milestones.map(m=>{
+      const done = CUR_USER.stage>=m, cur = CUR_USER.stage<m && (milestones[milestones.indexOf(m)-1]||0)<CUR_USER.stage;
+      return `<div class="track-node"><div class="track-dot ${done?'done':cur?'cur':''}">${m}</div>
+        <div class="track-info"><div class="t1">שלב ${m}</div><div class="t2">${m===1?'התחלה':m===1000?'שיא סופי':'פתיחת תרגילים חדשים'}</div></div></div>`;
+    }).join('') + '</div></div>';
+  }
+  $('sbContent').innerHTML = html;
+  const b = $('btnStartChallenge'); if(b) b.onclick = startMaxChallenge;
+}
+
+/* ---------- max challenge flow ---------- */
+function startMaxChallenge(){
+  inMaxChallenge = true; mcSeqIdx=0; mcRounds=0;
+  switchTab('tabWorkout');
+  $('wIdle').classList.add('hidden');
+  $('wDone').classList.add('hidden');
+  $('wActive').classList.remove('hidden');
+  $('curExName').textContent = '⚔️ אתגר מקסימום: ' + EX[CHALLENGE_SEQ[0]].name;
+  $('repTarget').textContent = '∞';
+  $('repNum').textContent = 0;
+  $('setDots').innerHTML = '';
+  wDetector = makeDetector(CHALLENGE_SEQ[0]);
+  if(wStopDemo) wStopDemo();
+  wStopDemo = startAnim($('demoCanvas'), animKeyFor(CHALLENGE_SEQ[0]), '#00e676');
+  ensureCamera();
+}
+function handleChallengeFrame(lm, now){
+  const exId = CHALLENGE_SEQ[mcSeqIdx];
+  const counted = wDetector.update(lm, now);
+  $('workoutMsg').textContent = wDetector.msg || '';
+  if(counted){
+    mcSeqIdx++;
+    if(mcSeqIdx>=CHALLENGE_SEQ.length){
+      mcSeqIdx=0; mcRounds++;
+      $('repNum').textContent = mcRounds;
+    }
+    const nextId = CHALLENGE_SEQ[mcSeqIdx];
+    wDetector = makeDetector(nextId);
+    $('curExName').textContent = '⚔️ אתגר מקסימום: ' + EX[nextId].name;
+    if(wStopDemo) wStopDemo();
+    wStopDemo = startAnim($('demoCanvas'), animKeyFor(nextId), '#00e676');
+  }
+}
+function endMaxChallenge(){
+  inMaxChallenge=false;
+  stopCamera();
+  if(wStopDemo){ wStopDemo(); wStopDemo=null; }
+  if(mcRounds > CUR_USER.challengePr){ CUR_USER.challengePr = mcRounds; persistCurUser(); }
+  renderWorkoutIdle();
+}
+
+/* ---------- profile ---------- */
+function renderProfile(){
+  $('pName').textContent = CUR_USER.username;
+  $('pFlag').textContent = countryFlag(CUR_USER.country);
+  $('pCountry').textContent = countryName(CUR_USER.country);
+  $('pStage').textContent = CUR_USER.stage;
+  $('pReps').textContent = CUR_USER.stats.totalReps;
+  const achv = computeAchievements(CUR_USER);
+  $('achvGrid').innerHTML = achv.map(a=>`<div class="achv ${a.on?'on':''}">${a.ic}<span class="an">${a.min}</span></div>`).join('');
+}
+function shareWhatsApp(){
+  const text = `💪 אני בשלב ${CUR_USER.stage}/1000 ב-FitQuest! סה"כ ${CUR_USER.stats.totalReps} חזרות. בואו להתחרות!`;
+  window.open('https://wa.me/?text='+encodeURIComponent(text), '_blank');
+}
+
+/* ---------- groups ---------- */
+function genGroupId(){ return 'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function codeFromId(id){ return id.slice(-6).toUpperCase(); }
+function renderGroup(){
+  const gdb = loadGrp();
+  const gid = CUR_USER.groupId;
+  if(gid && gdb.groups[gid]){
+    $('grpNone').classList.add('hidden');
+    $('grpHas').classList.remove('hidden');
+    const g = gdb.groups[gid];
+    $('gEmoji').textContent = g.emoji;
+    $('gName').textContent = g.name;
+    $('gCode').textContent = g.code;
+    const db = loadDB();
+    $('gMembers').innerHTML = g.members.map(mkey=>{
+      const u = db.users[mkey];
+      return `<div class="lb-row"><span class="flag">${countryFlag(u?u.country:'IL')}</span><span class="lb-name">${escapeHtml(u?u.username:mkey)}</span><span class="lb-val">שלב ${u?u.stage:'-'}</span></div>`;
+    }).join('');
+  } else {
+    $('grpNone').classList.remove('hidden');
+    $('grpHas').classList.add('hidden');
+  }
+}
+function createGroup(){
+  const name = $('grpNameIn').value.trim();
+  if(!name) return;
+  const emoji = $('grpEmojiIn').value;
+  const gdb = loadGrp();
+  const id = genGroupId();
+  const code = codeFromId(id);
+  gdb.groups[id] = {name, emoji, code, owner:CUR_KEY, members:[CUR_KEY]};
+  saveGrp(gdb);
+  CUR_USER.groupId = id;
+  persistCurUser();
+  renderGroup();
+}
+function joinGroup(){
+  const code = $('grpCodeIn').value.trim().toUpperCase();
+  if(!code) return;
+  const gdb = loadGrp();
+  const entry = Object.entries(gdb.groups).find(([id,g])=>g.code===code);
+  if(!entry){ alert('קוד לא נמצא'); return; }
+  const [id,g] = entry;
+  if(!g.members.includes(CUR_KEY)) g.members.push(CUR_KEY);
+  saveGrp(gdb);
+  CUR_USER.groupId = id;
+  persistCurUser();
+  renderGroup();
+}
+function leaveGroup(){
+  const gdb = loadGrp();
+  const gid = CUR_USER.groupId;
+  if(gid && gdb.groups[gid]){
+    gdb.groups[gid].members = gdb.groups[gid].members.filter(m=>m!==CUR_KEY);
+    saveGrp(gdb);
+  }
+  CUR_USER.groupId = null;
+  persistCurUser();
+  renderGroup();
+}
+function shareGroup(){
+  const gdb = loadGrp();
+  const g = gdb.groups[CUR_USER.groupId];
+  if(!g) return;
+  const text = `${g.emoji} הצטרפו לקבוצה "${g.name}" שלי ב-FitQuest! קוד הצטרפות: ${g.code}`;
+  window.open('https://wa.me/?text='+encodeURIComponent(text), '_blank');
+}
+
+/* ---------- admin panel ---------- */
+function renderAdminList(filter){
+  const db = loadDB();
+  filter = (filter||'').toLowerCase();
+  const users = Object.entries(db.users).filter(([k,u])=>u.username.toLowerCase().includes(filter) || (u.country||'').toLowerCase().includes(filter));
+  $('adminList').innerHTML = users.map(([k,u])=>`
+    <div class="admin-row">
+      <span class="flag">${countryFlag(u.country)}</span>
+      <input data-key="${escapeHtml(k)}" value="${escapeHtml(u.username)}">
+      <span class="tag">שלב ${u.stage}</span>
+      <button class="btn btn-sm btn-g" data-save="${escapeHtml(k)}">שמור</button>
+    </div>`).join('');
+  $('adminList').querySelectorAll('[data-save]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const key = btn.getAttribute('data-save');
+      const input = $('adminList').querySelector(`input[data-key="${CSS.escape(key)}"]`);
+      renameUser(key, input.value.trim());
+      renderAdminList($('adminSearch').value);
+    };
+  });
+}
+function renameUser(oldKey, newName){
+  if(!newName) return;
+  const db = loadDB();
+  const newLower = newName.toLowerCase();
+  const clash = Object.keys(db.users).find(k=>k!==oldKey && k.toLowerCase()===newLower);
+  if(clash){ alert('השם כבר תפוס'); return; }
+  const rec = db.users[oldKey];
+  rec.username = newName;
+  delete db.users[oldKey];
+  db.users[newName] = rec;
+  saveDB(db);
+  if(CUR_KEY===oldKey){ CUR_KEY=newName; CUR_USER=rec; saveSess({username:newName}); }
+}
+
+/* ---------- tabs / nav ---------- */
+function switchTab(tab){
+  curTab = tab;
+  document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+  $(tab).classList.remove('hidden');
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  if(tab==='tabHome') renderHome();
+  if(tab==='tabWorkout') renderWorkoutIdle();
+  if(tab==='tabBoard') renderBoard();
+  if(tab==='tabProfile') renderProfile();
+  if(tab==='tabGroup') renderGroup();
+}
+
+/* ---------- boot ---------- */
+function enterApp(){
+  const db = loadDB();
+  CUR_KEY = loadSess().username;
+  CUR_USER = db.users[CUR_KEY];
+  $('authScreen').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  applyLang(CUR_USER.lang || 'he');
+  $('setLang').value = CUR_USER.lang || 'he';
+  $('setCountry').value = CUR_USER.country || 'IL';
+  $('btnOpenAdmin').classList.toggle('hidden', !CUR_USER.isAdmin);
+  switchTab('tabHome');
+}
+
+function wireEvents(){
+  let mode='login';
+  $('authToggle').onclick = ()=>{
+    mode = mode==='login' ? 'register' : 'login';
+    $('regExtra').classList.toggle('hidden', mode==='login');
+    $('authSubmit').textContent = tr('he', mode==='login'?'loginBtn':'registerBtn');
+    $('authToggle').textContent = tr('he', mode==='login'?'toRegister':'toLogin');
+    $('authMsg').textContent='';
+  };
+  $('authSubmit').onclick = ()=>{
+    const name=$('authUser').value, pass=$('authPass').value;
+    let err;
+    if(mode==='login') err = doLogin(name,pass);
+    else err = doRegister(name,pass,$('authCountry').value,$('authLang').value);
+    if(err){ $('authMsg').textContent = err; return; }
+    enterApp();
+  };
+  document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+  $('btnStartWorkout').onclick = ()=>switchTab('tabWorkout');
+  $('btnBeginSet').onclick = startWorkoutSession;
+  $('btnStopWorkout').onclick = ()=>{ if(inMaxChallenge) endMaxChallenge(); else stopWorkoutEarly(); };
+  $('btnBackHome').onclick = ()=>switchTab('tabHome');
+  $('adminStageRange').oninput = (e)=>{ $('adminStageVal').textContent = e.target.value; $('wStageNum').textContent=e.target.value; workout=buildWorkout(Number(e.target.value)); $('wExList').innerHTML = workout.exercises.map(x=>`<span class="ex-chip">${EX[x.id].name} · ${x.reps}×${workout.sets}</span>`).join(''); };
+
+  $('btnSettingsHome').onclick = openSettings;
+  $('btnSettingsProfile').onclick = openSettings;
+  $('btnCloseSettings').onclick = ()=>$('settingsModal').classList.add('hidden');
+  $('setLang').onchange = (e)=>{ CUR_USER.lang=e.target.value; persistCurUser(); applyLang(e.target.value); switchTab(curTab); };
+  $('setCountry').onchange = (e)=>{ CUR_USER.country=e.target.value; persistCurUser(); };
+  $('btnLogout').onclick = doLogout;
+  $('btnLogout2').onclick = doLogout;
+  $('btnOpenAdmin').onclick = ()=>{ $('settingsModal').classList.add('hidden'); $('adminModal').classList.remove('hidden'); renderAdminList(''); };
+  $('btnCloseAdmin').onclick = ()=>$('adminModal').classList.add('hidden');
+  $('adminSearch').oninput = (e)=>renderAdminList(e.target.value);
+
+  $('btnShareWA').onclick = shareWhatsApp;
+  $('btnCreateGrp').onclick = createGroup;
+  $('btnJoinGrp').onclick = joinGroup;
+  $('btnLeaveGrp').onclick = leaveGroup;
+  $('btnShareGrp').onclick = shareGroup;
+}
+function openSettings(){ $('settingsModal').classList.remove('hidden'); }
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  ensureSeed();
+  initSelectors();
+  wireEvents();
+  const sess = loadSess();
+  if(sess && sess.username){
+    const db = loadDB();
+    if(db.users[sess.username]) enterApp();
+  }
+});
+</script>
+
+</body>
+</html>
