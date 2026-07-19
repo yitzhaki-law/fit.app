@@ -44,7 +44,7 @@ input,select{font-family:inherit; outline:none;}
 .topbar{display:flex; align-items:center; justify-content:space-between; padding:16px 18px 10px; }
 .topbar .brand{font-size:20px; font-weight:800; color:var(--g);}
 .iconbtn{width:38px; height:38px; border-radius:50%; background:var(--bg3); display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--text);}
-.page{flex:1; padding:6px 16px 90px; overflow-y:auto;}
+.page{flex:1; min-height:0; padding:6px 16px 90px; overflow-y:auto;}
 
 /* cards */
 .card{background:var(--bg3); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:14px;}
@@ -63,7 +63,7 @@ input,select{font-family:inherit; outline:none;}
 .tag{display:inline-block; background:var(--bg4); color:var(--warn); font-size:11px; padding:3px 9px; border-radius:20px;}
 
 /* bottom nav */
-#bottomNav{position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:var(--maxw); display:flex; background:var(--bg2); border-top:1px solid var(--border); padding:8px 4px calc(8px + env(safe-area-inset-bottom));}
+#bottomNav{position:fixed; z-index:20; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:var(--maxw); display:flex; background:var(--bg2); border-top:1px solid var(--border); padding:8px 4px calc(8px + env(safe-area-inset-bottom));}
 .navbtn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; background:none; color:var(--text2); font-size:10px; padding:4px 0;}
 .navbtn .ic{font-size:20px;}
 .navbtn.active{color:var(--g);}
@@ -73,7 +73,10 @@ input,select{font-family:inherit; outline:none;}
 .canvas-box{flex:1; position:relative; background:#000; border-radius:14px; overflow:hidden; aspect-ratio:3/4; border:2px solid var(--border);}
 .canvas-box.demo{border-color:var(--g);}
 .canvas-box.live{border-color:var(--warn);}
-.canvas-box canvas, .canvas-box video{width:100%; height:100%; object-fit:cover; position:absolute; inset:0;}
+.canvas-box canvas, .canvas-box video{width:100%; height:100%; position:absolute; inset:0;}
+.canvas-box video{object-fit:contain;}
+.ex-howto{background:var(--bg4); border-radius:12px; padding:12px; font-size:13px; line-height:1.6; margin:10px 0; color:var(--text2);}
+.ex-howto b{color:var(--text);}
 .canvas-label{position:absolute; top:6px; right:6px; background:rgba(0,0,0,.6); font-size:10px; padding:2px 8px; border-radius:8px; z-index:5;}
 #workoutMsg{background:var(--bg4); border-radius:10px; padding:10px; font-size:13px; text-align:center; color:var(--warn); min-height:20px; margin-bottom:10px;}
 .rep-display{text-align:center; margin:10px 0;}
@@ -98,13 +101,15 @@ input,select{font-family:inherit; outline:none;}
 /* stage path */
 .stage-progress-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
 .stage-path-wrap{position:relative; width:100%;}
-.stage-path-svg{position:absolute; inset:0; width:100%; height:100%; display:block;}
-.stage-node{position:absolute; width:52px; height:52px; border-radius:50%; background:var(--bg4); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px; color:var(--text2); transform:translate(-50%,50%); cursor:pointer;}
+.stage-row-bar{position:absolute; height:5px; border-radius:3px; background:var(--border);}
+.stage-row-bar.done{background:var(--g);}
+.stage-connector{position:absolute; width:5px; border-radius:3px; background:var(--border); transform:translateX(-50%);}
+.stage-connector.done{background:var(--g);}
+.stage-node{position:absolute; width:44px; height:44px; border-radius:50%; background:var(--bg4); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px; color:var(--text2); transform:translate(-50%,50%); cursor:pointer; z-index:1;}
 .stage-node.passed{background:var(--g); border-color:var(--g2); color:#04140b;}
 .stage-node.cur{background:var(--warn); border-color:var(--warn); color:#04140b; box-shadow:0 0 0 5px rgba(255,171,64,.22);}
 .stage-node.near{background:var(--bg4); border-color:var(--warn); color:var(--warn);}
 .stage-node.far{opacity:.5;}
-.stage-node .lk{position:absolute; bottom:-14px; font-size:10px;}
 
 /* stage modal */
 #stageModal .exrow{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-size:13px;}
@@ -214,6 +219,8 @@ input,select{font-family:inherit; outline:none;}
             <canvas id="liveCanvas" width="240" height="320"></canvas>
           </div>
         </div>
+        <div style="font-size:11px; color:var(--text2); text-align:center; margin:2px 0 8px;">💡 הניחו את הטלפון נשען (למשל על כיסא) במרחק שבו רואים את כל הגוף מהראש ועד העקבים</div>
+        <div class="ex-howto" id="exHowto"></div>
         <div id="workoutMsg"></div>
         <div class="rep-display">
           <div class="num" id="repNum">0</div>
@@ -267,6 +274,10 @@ input,select{font-family:inherit; outline:none;}
           <div class="row2">
             <div class="field" style="flex:2"><input id="grpNameIn" placeholder="שם הקבוצה"></div>
             <div class="field" style="flex:1"><select id="grpEmojiIn"></select></div>
+          </div>
+          <div class="field" style="margin-top:10px;">
+            <label data-t="groupCodeLabel">קוד הצטרפות (אפשר לשנות)</label>
+            <input id="grpCodeCreateIn" style="text-transform:uppercase" maxlength="10">
           </div>
           <button class="btn btn-g" style="width:100%; margin-top:10px;" id="btnCreateGrp" data-t="create">צור</button>
         </div>
@@ -368,7 +379,7 @@ const T = {
     national:'ארצי', challenge:'אתגר', stagesTab:'שלבים',
     todayWorkout:'האימון של שלב', demo:'דוגמא', you:'את/ה', reps:'חזרות', stop:'עצור אימון', stageComplete:'שלב הושלם!', great:'מעולה',
     achievements:'🏅 הישגים', share_whatsapp:'📱 שתף בוואצאפ', logout:'התנתק', settings:'הגדרות', admin:'🛠 פאנל ניהול',
-    create_group:'➕ צור קבוצה', create:'צור', join_group:'🔑 הצטרף לקבוצה', join:'הצטרף', members:'👥 חברים', leave_group:'עזוב קבוצה',
+    create_group:'➕ צור קבוצה', create:'צור', join_group:'🔑 הצטרף לקבוצה', join:'הצטרף', members:'👥 חברים', leave_group:'עזוב קבוצה', groupCodeLabel:'קוד הצטרפות (אפשר לשנות)',
     redo:'עשה שוב', locked:'🔒 נעול', lockedNear:'עדיין נעול — סיימו קודם את השלבים הקודמים', exercises:'תרגילים', sets:'סטים',
     search:'חיפוש', save:'שמור', yourStage:'השלב שלך', noRecords:'אין שיאים עדיין', challengeBtn:'⚔️ התחל אתגר מקסימום', start:'התחל'},
   en:{sub:'1000 stages. Real workouts. AI that sees you.', username:'Username', password:'Password', country:'Country', language:'Language',
@@ -378,7 +389,7 @@ const T = {
     national:'National', challenge:'Challenge', stagesTab:'Stages',
     todayWorkout:'Workout for stage', demo:'Demo', you:'You', reps:'reps', stop:'Stop workout', stageComplete:'Stage complete!', great:'Great',
     achievements:'🏅 Achievements', share_whatsapp:'📱 Share on WhatsApp', logout:'Log out', settings:'Settings', admin:'🛠 Admin panel',
-    create_group:'➕ Create group', create:'Create', join_group:'🔑 Join group', join:'Join', members:'👥 Members', leave_group:'Leave group',
+    create_group:'➕ Create group', create:'Create', join_group:'🔑 Join group', join:'Join', members:'👥 Members', leave_group:'Leave group', groupCodeLabel:'Join code (editable)',
     redo:'Do again', locked:'🔒 Locked', lockedNear:'Still locked — finish the previous stages first', exercises:'Exercises', sets:'Sets',
     search:'Search', save:'Save', yourStage:'Your stage', noRecords:'No records yet', challengeBtn:'⚔️ Start Max Challenge', start:'Start'},
   ar:{sub:'1000 مرحلة. تمارين حقيقية. ذكاء اصطناعي يراك.', username:'اسم المستخدم', password:'كلمة المرور', country:'الدولة', language:'اللغة',
@@ -388,7 +399,7 @@ const T = {
     national:'محلي', challenge:'تحدي', stagesTab:'المراحل',
     todayWorkout:'تمرين المرحلة', demo:'مثال', you:'أنت', reps:'تكرارات', stop:'إيقاف التمرين', stageComplete:'اكتملت المرحلة!', great:'رائع',
     achievements:'🏅 الإنجازات', share_whatsapp:'📱 مشاركة عبر واتساب', logout:'تسجيل الخروج', settings:'الإعدادات', admin:'🛠 لوحة الإدارة',
-    create_group:'➕ إنشاء مجموعة', create:'إنشاء', join_group:'🔑 الانضمام لمجموعة', join:'انضمام', members:'👥 الأعضاء', leave_group:'مغادرة المجموعة',
+    create_group:'➕ إنشاء مجموعة', create:'إنشاء', join_group:'🔑 الانضمام لمجموعة', join:'انضمام', members:'👥 الأعضاء', leave_group:'مغادرة المجموعة', groupCodeLabel:'رمز الانضمام (قابل للتغيير)',
     redo:'إعادة', locked:'🔒 مقفل', lockedNear:'ما زال مقفلاً — أكمل المراحل السابقة أولاً', exercises:'تمارين', sets:'مجموعات',
     search:'بحث', save:'حفظ', yourStage:'مرحلتك', noRecords:'لا توجد أرقام قياسية بعد', challengeBtn:'⚔️ ابدأ تحدي الحد الأقصى', start:'ابدأ'},
   ru:{sub:'1000 уровней. Настоящие тренировки. ИИ, который видит вас.', username:'Имя пользователя', password:'Пароль', country:'Страна', language:'Язык',
@@ -398,7 +409,7 @@ const T = {
     national:'Страна', challenge:'Испытание', stagesTab:'Уровни',
     todayWorkout:'Тренировка уровня', demo:'Демо', you:'Вы', reps:'повторений', stop:'Остановить', stageComplete:'Уровень пройден!', great:'Отлично',
     achievements:'🏅 Достижения', share_whatsapp:'📱 Поделиться в WhatsApp', logout:'Выйти', settings:'Настройки', admin:'🛠 Панель администратора',
-    create_group:'➕ Создать группу', create:'Создать', join_group:'🔑 Присоединиться к группе', join:'Присоединиться', members:'👥 Участники', leave_group:'Покинуть группу',
+    create_group:'➕ Создать группу', create:'Создать', join_group:'🔑 Присоединиться к группе', join:'Присоединиться', members:'👥 Участники', leave_group:'Покинуть группу', groupCodeLabel:'Код для присоединения (можно изменить)',
     redo:'Повторить', locked:'🔒 Заблокировано', lockedNear:'Пока заблокировано — сначала пройдите предыдущие уровни', exercises:'Упражнения', sets:'Подходы',
     search:'Поиск', save:'Сохранить', yourStage:'Ваш уровень', noRecords:'Пока нет рекордов', challengeBtn:'⚔️ Начать макс. испытание', start:'Начать'},
   fr:{sub:"1000 étapes. De vrais entraînements. Une IA qui vous voit.", username:"Nom d'utilisateur", password:'Mot de passe', country:'Pays', language:'Langue',
@@ -408,7 +419,7 @@ const T = {
     national:'National', challenge:'Défi', stagesTab:'Étapes',
     todayWorkout:"Entraînement de l'étape", demo:'Démo', you:'Vous', reps:'répétitions', stop:"Arrêter l'entraînement", stageComplete:'Étape terminée !', great:'Génial',
     achievements:'🏅 Succès', share_whatsapp:'📱 Partager sur WhatsApp', logout:'Déconnexion', settings:'Paramètres', admin:'🛠 Panneau admin',
-    create_group:'➕ Créer un groupe', create:'Créer', join_group:'🔑 Rejoindre un groupe', join:'Rejoindre', members:'👥 Membres', leave_group:'Quitter le groupe',
+    create_group:'➕ Créer un groupe', create:'Créer', join_group:'🔑 Rejoindre un groupe', join:'Rejoindre', members:'👥 Membres', leave_group:'Quitter le groupe', groupCodeLabel:'Code d\'adhésion (modifiable)',
     redo:'Refaire', locked:'🔒 Verrouillé', lockedNear:"Encore verrouillé — terminez d'abord les étapes précédentes", exercises:'Exercices', sets:'Séries',
     search:'Rechercher', save:'Enregistrer', yourStage:'Votre étape', noRecords:'Aucun record pour le moment', challengeBtn:'⚔️ Démarrer le défi max', start:'Commencer'},
   es:{sub:'1000 niveles. Entrenamientos reales. IA que te ve.', username:'Usuario', password:'Contraseña', country:'País', language:'Idioma',
@@ -418,7 +429,7 @@ const T = {
     national:'Nacional', challenge:'Desafío', stagesTab:'Niveles',
     todayWorkout:'Entrenamiento del nivel', demo:'Demo', you:'Tú', reps:'repeticiones', stop:'Detener entrenamiento', stageComplete:'¡Nivel completado!', great:'Genial',
     achievements:'🏅 Logros', share_whatsapp:'📱 Compartir en WhatsApp', logout:'Cerrar sesión', settings:'Ajustes', admin:'🛠 Panel de administración',
-    create_group:'➕ Crear grupo', create:'Crear', join_group:'🔑 Unirse a un grupo', join:'Unirse', members:'👥 Miembros', leave_group:'Salir del grupo',
+    create_group:'➕ Crear grupo', create:'Crear', join_group:'🔑 Unirse a un grupo', join:'Unirse', members:'👥 Miembros', leave_group:'Salir del grupo', groupCodeLabel:'Código de unión (editable)',
     redo:'Repetir', locked:'🔒 Bloqueado', lockedNear:'Aún bloqueado — completa antes los niveles anteriores', exercises:'Ejercicios', sets:'Series',
     search:'Buscar', save:'Guardar', yourStage:'Tu nivel', noRecords:'Aún no hay récords', challengeBtn:'⚔️ Iniciar desafío máximo', start:'Empezar'},
   pt:{sub:'1000 estágios. Treinos reais. IA que te vê.', username:'Nome de usuário', password:'Senha', country:'País', language:'Idioma',
@@ -428,7 +439,7 @@ const T = {
     national:'Nacional', challenge:'Desafio', stagesTab:'Estágios',
     todayWorkout:'Treino do estágio', demo:'Demo', you:'Você', reps:'repetições', stop:'Parar treino', stageComplete:'Estágio concluído!', great:'Ótimo',
     achievements:'🏅 Conquistas', share_whatsapp:'📱 Compartilhar no WhatsApp', logout:'Sair', settings:'Configurações', admin:'🛠 Painel admin',
-    create_group:'➕ Criar grupo', create:'Criar', join_group:'🔑 Entrar em grupo', join:'Entrar', members:'👥 Membros', leave_group:'Sair do grupo',
+    create_group:'➕ Criar grupo', create:'Criar', join_group:'🔑 Entrar em grupo', join:'Entrar', members:'👥 Membros', leave_group:'Sair do grupo', groupCodeLabel:'Código de entrada (editável)',
     redo:'Refazer', locked:'🔒 Bloqueado', lockedNear:'Ainda bloqueado — complete os estágios anteriores primeiro', exercises:'Exercícios', sets:'Séries',
     search:'Buscar', save:'Salvar', yourStage:'Seu estágio', noRecords:'Ainda sem recordes', challengeBtn:'⚔️ Iniciar desafio máximo', start:'Iniciar'},
   de:{sub:'1000 Stufen. Echtes Training. KI, die dich sieht.', username:'Benutzername', password:'Passwort', country:'Land', language:'Sprache',
@@ -438,7 +449,7 @@ const T = {
     national:'National', challenge:'Challenge', stagesTab:'Stufen',
     todayWorkout:'Training für Stufe', demo:'Demo', you:'Du', reps:'Wiederholungen', stop:'Training beenden', stageComplete:'Stufe abgeschlossen!', great:'Super',
     achievements:'🏅 Erfolge', share_whatsapp:'📱 Auf WhatsApp teilen', logout:'Abmelden', settings:'Einstellungen', admin:'🛠 Admin-Bereich',
-    create_group:'➕ Gruppe erstellen', create:'Erstellen', join_group:'🔑 Gruppe beitreten', join:'Beitreten', members:'👥 Mitglieder', leave_group:'Gruppe verlassen',
+    create_group:'➕ Gruppe erstellen', create:'Erstellen', join_group:'🔑 Gruppe beitreten', join:'Beitreten', members:'👥 Mitglieder', leave_group:'Gruppe verlassen', groupCodeLabel:'Beitrittscode (änderbar)',
     redo:'Wiederholen', locked:'🔒 Gesperrt', lockedNear:'Noch gesperrt — schließe zuerst die vorherigen Stufen ab', exercises:'Übungen', sets:'Sätze',
     search:'Suche', save:'Speichern', yourStage:'Deine Stufe', noRecords:'Noch keine Rekorde', challengeBtn:'⚔️ Max-Challenge starten', start:'Start'},
   it:{sub:"1000 livelli. Allenamenti reali. Un'IA che ti vede.", username:'Nome utente', password:'Password', country:'Paese', language:'Lingua',
@@ -448,7 +459,7 @@ const T = {
     national:'Nazionale', challenge:'Sfida', stagesTab:'Livelli',
     todayWorkout:'Allenamento del livello', demo:'Demo', you:'Tu', reps:'ripetizioni', stop:"Ferma l'allenamento", stageComplete:'Livello completato!', great:'Ottimo',
     achievements:'🏅 Obiettivi', share_whatsapp:'📱 Condividi su WhatsApp', logout:'Esci', settings:'Impostazioni', admin:'🛠 Pannello admin',
-    create_group:'➕ Crea gruppo', create:'Crea', join_group:'🔑 Unisciti a un gruppo', join:'Unisciti', members:'👥 Membri', leave_group:'Lascia il gruppo',
+    create_group:'➕ Crea gruppo', create:'Crea', join_group:'🔑 Unisciti a un gruppo', join:'Unisciti', members:'👥 Membri', leave_group:'Lascia il gruppo', groupCodeLabel:'Codice d\'accesso (modificabile)',
     redo:'Ripeti', locked:'🔒 Bloccato', lockedNear:'Ancora bloccato — completa prima i livelli precedenti', exercises:'Esercizi', sets:'Serie',
     search:'Cerca', save:'Salva', yourStage:'Il tuo livello', noRecords:'Nessun record ancora', challengeBtn:'⚔️ Avvia sfida massima', start:'Inizia'},
   tr:{sub:'1000 aşama. Gerçek antrenmanlar. Sizi gören bir yapay zeka.', username:'Kullanıcı adı', password:'Şifre', country:'Ülke', language:'Dil',
@@ -458,7 +469,7 @@ const T = {
     national:'Ulusal', challenge:'Meydan okuma', stagesTab:'Aşamalar',
     todayWorkout:'Aşama antrenmanı', demo:'Demo', you:'Sen', reps:'tekrar', stop:'Antrenmanı durdur', stageComplete:'Aşama tamamlandı!', great:'Harika',
     achievements:'🏅 Başarılar', share_whatsapp:"📱 WhatsApp'ta paylaş", logout:'Çıkış yap', settings:'Ayarlar', admin:'🛠 Yönetici paneli',
-    create_group:'➕ Grup oluştur', create:'Oluştur', join_group:'🔑 Gruba katıl', join:'Katıl', members:'👥 Üyeler', leave_group:'Gruptan ayrıl',
+    create_group:'➕ Grup oluştur', create:'Oluştur', join_group:'🔑 Gruba katıl', join:'Katıl', members:'👥 Üyeler', leave_group:'Gruptan ayrıl', groupCodeLabel:'Katılım kodu (düzenlenebilir)',
     redo:'Tekrar yap', locked:'🔒 Kilitli', lockedNear:'Hâlâ kilitli — önce önceki aşamaları tamamlayın', exercises:'Egzersizler', sets:'Set',
     search:'Ara', save:'Kaydet', yourStage:'Aşamanız', noRecords:'Henüz rekor yok', challengeBtn:'⚔️ Maks. meydan okumayı başlat', start:'Başla'},
   uk:{sub:"1000 рівнів. Справжні тренування. ШІ, який вас бачить.", username:"Ім'я користувача", password:'Пароль', country:'Країна', language:'Мова',
@@ -468,7 +479,7 @@ const T = {
     national:'Країна', challenge:'Виклик', stagesTab:'Рівні',
     todayWorkout:'Тренування рівня', demo:'Демо', you:'Ви', reps:'повторень', stop:'Зупинити тренування', stageComplete:'Рівень пройдено!', great:'Чудово',
     achievements:'🏅 Досягнення', share_whatsapp:'📱 Поділитися у WhatsApp', logout:'Вийти', settings:'Налаштування', admin:'🛠 Панель адміністратора',
-    create_group:'➕ Створити групу', create:'Створити', join_group:'🔑 Приєднатися до групи', join:'Приєднатися', members:'👥 Учасники', leave_group:'Покинути групу',
+    create_group:'➕ Створити групу', create:'Створити', join_group:'🔑 Приєднатися до групи', join:'Приєднатися', members:'👥 Учасники', leave_group:'Покинути групу', groupCodeLabel:'Код приєднання (можна змінити)',
     redo:'Повторити', locked:'🔒 Заблоковано', lockedNear:'Поки заблоковано — спочатку пройдіть попередні рівні', exercises:'Вправи', sets:'Підходи',
     search:'Пошук', save:'Зберегти', yourStage:'Ваш рівень', noRecords:'Поки немає рекордів', challengeBtn:'⚔️ Почати макс. виклик', start:'Почати'},
   pl:{sub:'1000 etapów. Prawdziwe treningi. AI, która cię widzi.', username:'Nazwa użytkownika', password:'Hasło', country:'Kraj', language:'Język',
@@ -478,7 +489,7 @@ const T = {
     national:'Krajowy', challenge:'Wyzwanie', stagesTab:'Etapy',
     todayWorkout:'Trening etapu', demo:'Demo', you:'Ty', reps:'powtórzeń', stop:'Zatrzymaj trening', stageComplete:'Etap ukończony!', great:'Świetnie',
     achievements:'🏅 Osiągnięcia', share_whatsapp:'📱 Udostępnij w WhatsApp', logout:'Wyloguj się', settings:'Ustawienia', admin:'🛠 Panel admina',
-    create_group:'➕ Utwórz grupę', create:'Utwórz', join_group:'🔑 Dołącz do grupy', join:'Dołącz', members:'👥 Członkowie', leave_group:'Opuść grupę',
+    create_group:'➕ Utwórz grupę', create:'Utwórz', join_group:'🔑 Dołącz do grupy', join:'Dołącz', members:'👥 Członkowie', leave_group:'Opuść grupę', groupCodeLabel:'Kod dołączenia (edytowalny)',
     redo:'Powtórz', locked:'🔒 Zablokowane', lockedNear:'Nadal zablokowane — najpierw ukończ poprzednie etapy', exercises:'Ćwiczenia', sets:'Serie',
     search:'Szukaj', save:'Zapisz', yourStage:'Twój etap', noRecords:'Brak rekordów', challengeBtn:'⚔️ Rozpocznij max wyzwanie', start:'Start'},
   ro:{sub:'1000 de etape. Antrenamente reale. AI care te vede.', username:'Nume utilizator', password:'Parolă', country:'Țară', language:'Limbă',
@@ -488,7 +499,7 @@ const T = {
     national:'Național', challenge:'Provocare', stagesTab:'Etape',
     todayWorkout:'Antrenamentul etapei', demo:'Demo', you:'Tu', reps:'repetări', stop:'Oprește antrenamentul', stageComplete:'Etapă finalizată!', great:'Grozav',
     achievements:'🏅 Realizări', share_whatsapp:'📱 Distribuie pe WhatsApp', logout:'Deconectare', settings:'Setări', admin:'🛠 Panou admin',
-    create_group:'➕ Creează grup', create:'Creează', join_group:'🔑 Alătură-te unui grup', join:'Alătură-te', members:'👥 Membri', leave_group:'Părăsește grupul',
+    create_group:'➕ Creează grup', create:'Creează', join_group:'🔑 Alătură-te unui grup', join:'Alătură-te', members:'👥 Membri', leave_group:'Părăsește grupul', groupCodeLabel:'Cod de alăturare (editabil)',
     redo:'Repetă', locked:'🔒 Blocat', lockedNear:'Încă blocat — finalizează mai întâi etapele anterioare', exercises:'Exerciții', sets:'Seturi',
     search:'Caută', save:'Salvează', yourStage:'Etapa ta', noRecords:'Încă nu există recorduri', challengeBtn:'⚔️ Începe provocarea maximă', start:'Începe'},
   am:{sub:'1000 ደረጃዎች። እውነተኛ ልምምድ። የሚያይዎት AI።', username:'የተጠቃሚ ስም', password:'የይለፍ ቃል', country:'ሀገር', language:'ቋንቋ',
@@ -498,7 +509,7 @@ const T = {
     national:'ብሔራዊ', challenge:'ፈተና', stagesTab:'ደረጃዎች',
     todayWorkout:'የደረጃ ልምምድ', demo:'ማሳያ', you:'አንተ', reps:'ድግግሞሽ', stop:'ልምምድ አቁም', stageComplete:'ደረጃ ተጠናቋል!', great:'እጅግ በጣም ጥሩ',
     achievements:'🏅 ስኬቶች', share_whatsapp:'📱 በዋትስአፕ አጋራ', logout:'ውጣ', settings:'ቅንብሮች', admin:'🛠 የአስተዳዳሪ ፓነል',
-    create_group:'➕ ቡድን ፍጠር', create:'ፍጠር', join_group:'🔑 ቡድን ተቀላቀል', join:'ተቀላቀል', members:'👥 አባላት', leave_group:'ቡድን ልቀቅ',
+    create_group:'➕ ቡድን ፍጠር', create:'ፍጠር', join_group:'🔑 ቡድን ተቀላቀል', join:'ተቀላቀል', members:'👥 አባላት', leave_group:'ቡድን ልቀቅ', groupCodeLabel:'የመቀላቀያ ኮድ (ሊቀየር ይችላል)',
     redo:'እንደገና አድርግ', locked:'🔒 የተቆለፈ', lockedNear:'አሁንም የተቆለፈ — መጀመሪያ ቀደም ያሉ ደረጃዎችን ጨርስ', exercises:'ልምምዶች', sets:'ስብስቦች',
     search:'ፈልግ', save:'አስቀምጥ', yourStage:'ደረጃህ', noRecords:'እስካሁን ምንም ክብረ ወሰን የለም', challengeBtn:'⚔️ ከፍተኛ ፈተና ጀምር', start:'ጀምር'},
   hi:{sub:'1000 चरण। असली वर्कआउट। AI जो आपको देखता है।', username:'उपयोगकर्ता नाम', password:'पासवर्ड', country:'देश', language:'भाषा',
@@ -508,7 +519,7 @@ const T = {
     national:'राष्ट्रीय', challenge:'चुनौती', stagesTab:'चरण',
     todayWorkout:'चरण का वर्कआउट', demo:'डेमो', you:'आप', reps:'दोहराव', stop:'वर्कआउट रोकें', stageComplete:'चरण पूरा हुआ!', great:'बहुत बढ़िया',
     achievements:'🏅 उपलब्धियाँ', share_whatsapp:'📱 व्हाट्सएप पर शेयर करें', logout:'लॉग आउट', settings:'सेटिंग्स', admin:'🛠 एडमिन पैनल',
-    create_group:'➕ समूह बनाएं', create:'बनाएं', join_group:'🔑 समूह में शामिल हों', join:'शामिल हों', members:'👥 सदस्य', leave_group:'समूह छोड़ें',
+    create_group:'➕ समूह बनाएं', create:'बनाएं', join_group:'🔑 समूह में शामिल हों', join:'शामिल हों', members:'👥 सदस्य', leave_group:'समूह छोड़ें', groupCodeLabel:'जॉइन कोड (संपादन योग्य)',
     redo:'फिर से करें', locked:'🔒 लॉक', lockedNear:'अभी भी लॉक — पहले पिछले चरण पूरे करें', exercises:'व्यायाम', sets:'सेट',
     search:'खोजें', save:'सहेजें', yourStage:'आपका चरण', noRecords:'अभी तक कोई रिकॉर्ड नहीं', challengeBtn:'⚔️ मैक्स चैलेंज शुरू करें', start:'शुरू करें'},
   zh:{sub:'1000个关卡。真实锻炼。看得见你的AI。', username:'用户名', password:'密码', country:'国家', language:'语言',
@@ -518,7 +529,7 @@ const T = {
     national:'本国', challenge:'挑战', stagesTab:'关卡',
     todayWorkout:'关卡训练', demo:'示范', you:'你', reps:'次', stop:'停止训练', stageComplete:'关卡完成！', great:'太棒了',
     achievements:'🏅 成就', share_whatsapp:'📱 分享到WhatsApp', logout:'退出登录', settings:'设置', admin:'🛠 管理面板',
-    create_group:'➕ 创建小组', create:'创建', join_group:'🔑 加入小组', join:'加入', members:'👥 成员', leave_group:'退出小组',
+    create_group:'➕ 创建小组', create:'创建', join_group:'🔑 加入小组', join:'加入', members:'👥 成员', leave_group:'退出小组', groupCodeLabel:'加入代码（可编辑）',
     redo:'重新挑战', locked:'🔒 已锁定', lockedNear:'仍然锁定 — 请先完成之前的关卡', exercises:'动作', sets:'组数',
     search:'搜索', save:'保存', yourStage:'你的关卡', noRecords:'暂无记录', challengeBtn:'⚔️ 开始极限挑战', start:'开始'},
   ja:{sub:'1000ステージ。本物のトレーニング。あなたを見るAI。', username:'ユーザー名', password:'パスワード', country:'国', language:'言語',
@@ -528,7 +539,7 @@ const T = {
     national:'国内', challenge:'チャレンジ', stagesTab:'ステージ',
     todayWorkout:'ステージのトレーニング', demo:'デモ', you:'あなた', reps:'回', stop:'トレーニング終了', stageComplete:'ステージクリア！', great:'最高',
     achievements:'🏅 実績', share_whatsapp:'📱 WhatsAppで共有', logout:'ログアウト', settings:'設定', admin:'🛠 管理パネル',
-    create_group:'➕ グループ作成', create:'作成', join_group:'🔑 グループに参加', join:'参加', members:'👥 メンバー', leave_group:'グループを退出',
+    create_group:'➕ グループ作成', create:'作成', join_group:'🔑 グループに参加', join:'参加', members:'👥 メンバー', leave_group:'グループを退出', groupCodeLabel:'参加コード（編集可能）',
     redo:'もう一度', locked:'🔒 ロック中', lockedNear:'まだロック中 — 先に前のステージをクリアしてください', exercises:'種目', sets:'セット',
     search:'検索', save:'保存', yourStage:'あなたのステージ', noRecords:'まだ記録がありません', challengeBtn:'⚔️ 最大チャレンジ開始', start:'開始'},
   th:{sub:'1,000 ด่าน ออกกำลังกายจริง AI ที่มองเห็นคุณ', username:'ชื่อผู้ใช้', password:'รหัสผ่าน', country:'ประเทศ', language:'ภาษา',
@@ -538,7 +549,7 @@ const T = {
     national:'ในประเทศ', challenge:'ท้าทาย', stagesTab:'ด่าน',
     todayWorkout:'การฝึกของด่าน', demo:'ตัวอย่าง', you:'คุณ', reps:'ครั้ง', stop:'หยุดออกกำลังกาย', stageComplete:'ผ่านด่านแล้ว!', great:'เยี่ยมมาก',
     achievements:'🏅 ความสำเร็จ', share_whatsapp:'📱 แชร์ผ่าน WhatsApp', logout:'ออกจากระบบ', settings:'ตั้งค่า', admin:'🛠 แผงผู้ดูแลระบบ',
-    create_group:'➕ สร้างกลุ่ม', create:'สร้าง', join_group:'🔑 เข้าร่วมกลุ่ม', join:'เข้าร่วม', members:'👥 สมาชิก', leave_group:'ออกจากกลุ่ม',
+    create_group:'➕ สร้างกลุ่ม', create:'สร้าง', join_group:'🔑 เข้าร่วมกลุ่ม', join:'เข้าร่วม', members:'👥 สมาชิก', leave_group:'ออกจากกลุ่ม', groupCodeLabel:'รหัสเข้าร่วม (แก้ไขได้)',
     redo:'ทำอีกครั้ง', locked:'🔒 ล็อกอยู่', lockedNear:'ยังล็อกอยู่ — ผ่านด่านก่อนหน้าก่อน', exercises:'ท่าออกกำลังกาย', sets:'เซ็ต',
     search:'ค้นหา', save:'บันทึก', yourStage:'ด่านของคุณ', noRecords:'ยังไม่มีสถิติ', challengeBtn:'⚔️ เริ่มชาเลนจ์สูงสุด', start:'เริ่ม'},
 };
@@ -632,25 +643,25 @@ function persistCurUser(){ const db=loadDB(); db.users[CUR_KEY]=CUR_USER; saveDB
 
 /* ---------- exercise / tier system ---------- */
 const EX = {
-  pushup_reg:{name:'שכיבות סמיכה רגילות', cat:'pushups'},
-  squat_reg:{name:'סקוואטים רגילים', cat:'squats'},
-  situp:{name:'כפיפות בטן', cat:'situps'},
-  pushup_wide:{name:'שכיבות רחבות', cat:'pushups'},
-  lunge:{name:"לאנג'ים", cat:'other'},
-  bicycle:{name:'כפיפות אופניים', cat:'situps'},
-  plank:{name:'פלאנק', cat:'other'},
-  pushup_close:{name:'שכיבות צמודות', cat:'pushups'},
-  pike:{name:'פייק', cat:'other'},
-  squat_jump:{name:'סקוואטים קפיצה', cat:'squats'},
-  legraise:{name:'הרמות רגליים', cat:'situps'},
-  mountain:{name:'טיפוס הר', cat:'other'},
-  diamond:{name:'יהלום', cat:'pushups'},
-  lunge_jump:{name:"לאנג'ים קפיצה", cat:'other'},
-  bulgarian:{name:'סקוואטים בולגריים', cat:'squats'},
-  vup:{name:'V-ups', cat:'situps'},
-  burpee:{name:'בורפי', cat:'other'},
-  archer:{name:"ארצ'ר", cat:'pushups'},
-  pistol:{name:'סקוואטים חד-רגל', cat:'squats'}
+  pushup_reg:{name:'שכיבות סמיכה רגילות', cat:'pushups', howto:'שכבו על הבטן, ידיים ברוחב הכתפיים. הורידו את החזה כמעט עד הרצפה (מרפק מתחת ל-105°) ודחפו בחזרה עד יישור מלא. שמרו על הגוף כקו ישר מהכתפיים ועד העקבים, בלי לשקוע בברכיים.'},
+  squat_reg:{name:'סקוואטים רגילים', cat:'squats', howto:'עמדו רגליים ברוחב האגן. רדו למטה כאילו יושבים על כיסא, ירכיים עד קרוב לגובה הברכיים, גב ישר. דחפו מהעקבים חזרה למעלה ליישור מלא של הברכיים.'},
+  situp:{name:'כפיפות בטן', cat:'situps', howto:'שכבו על הגב, ברכיים כפופות. הרימו את פלג הגוף העליון קדימה עד שהכתפיים מתרחקות משמעותית מהרצפה, ואז חיזרו לשכיבה מלאה בשליטה.'},
+  pushup_wide:{name:'שכיבות רחבות', cat:'pushups', howto:'כמו שכיבת סמיכה רגילה, אך ידיים רחבות יותר מרוחב הכתפיים. מדגיש את החזה. ירדו עד מרפק חד וחזרו ליישור מלא.'},
+  lunge:{name:"לאנג'ים", cat:'other', howto:'צעד גדול קדימה, הורידו את הברך האחורית כמעט עד הרצפה כשהברך הקדמית בזווית של כ-90°, ודחפו חזרה לעמידה. החליפו רגליים.'},
+  bicycle:{name:'כפיפות אופניים', cat:'situps', howto:'שכבו על הגב, ידיים מאחורי הראש. הביאו מרפק ימין לברך שמאל תוך יישור הרגל הנגדית, ואז החליפו צד בתנועת פדלים.'},
+  plank:{name:'פלאנק', cat:'other', howto:'תמכו על האמות ועל קצות כפות הרגליים, גוף ישר לגמרי מכתפיים ועד עקבים. הפעילו את הבטן והחזיקו ללא שקיעה באגן.'},
+  pushup_close:{name:'שכיבות צמודות', cat:'pushups', howto:'שכיבת סמיכה עם ידיים צמודות מתחת לחזה, מרפקים צמודים לגוף. מדגיש את הזרוע האחורית (טרייספס).'},
+  pike:{name:'פייק', cat:'other', howto:'ממצב שכיבת סמיכה, הרימו את האגן גבוה כך שהגוף יוצר "V" הפוך, ואז כופפו מרפקים והורידו את הראש לכיוון הרצפה בין הידיים.'},
+  squat_jump:{name:'סקוואטים קפיצה', cat:'squats', howto:'בצעו סקוואט רגיל ובעלייה קפצו בפיצוץ למעלה, נחתו רך בחזרה לעומק הסקוואט.'},
+  legraise:{name:'הרמות רגליים', cat:'situps', howto:'שכבו על הגב, ידיים לצדדים. הרימו את הרגליים הישרות עד זווית של כ-90°, ואז הורידו לאט בלי לגעת ברצפה.'},
+  mountain:{name:'טיפוס הר', cat:'other', howto:'ממצב פלאנק על הידיים, הביאו ברך אחת לכיוון החזה במהירות והחליפו רגליים ברצף ריצה מהיר.'},
+  diamond:{name:'יהלום', cat:'pushups', howto:'שכיבת סמיכה עם האגודלים והאצבעות המורות נוגעים ויוצרים צורת יהלום מתחת לחזה. מדגיש טרייספס וחזה פנימי.'},
+  lunge_jump:{name:"לאנג'ים קפיצה", cat:'other', howto:'מעמדת לאנג\', קפצו והחליפו רגליים באוויר, נחתו ישר ללאנג\' בצד השני.'},
+  bulgarian:{name:'סקוואטים בולגריים', cat:'squats', howto:'הניחו כף רגל אחורית מוגבהת (על ספסל/כיסא), רדו בסקוואט על הרגל הקדמית עד זווית 90° וחזרו למעלה.'},
+  vup:{name:'V-ups', cat:'situps', howto:'שכבו על הגב, ידיים ורגליים ישרות. הרימו ידיים ורגליים יחד במקביל ליצירת צורת "V", געו בקצות הרגליים, וחזרו לשכיבה.'},
+  burpee:{name:'בורפי', cat:'other', howto:'מעמידה רדו לכריעה, קפצו לפלאנק, בצעו שכיבת סמיכה (אופציונלי), קפצו חזרה לכריעה וקפצו למעלה בפיצוץ עם ידיים באוויר.'},
+  archer:{name:"ארצ'ר", cat:'pushups', howto:'שכיבת סמיכה עם ידיים רחבות מאוד. הורידו את הגוף לכיוון יד אחת בזמן שהיד השנייה נשארת כמעט ישרה בצד, החליפו צד בכל חזרה.'},
+  pistol:{name:'סקוואטים חד-רגל', cat:'squats', howto:'עמדו על רגל אחת, השנייה מורמת קדימה ישרה. רדו לעומק סקוואט מלא על הרגל התומכת תוך שמירה על שיווי משקל, וחזרו למעלה.'}
 };
 const TIERS = [
   {min:1,   add:['pushup_reg','squat_reg','situp']},
@@ -715,17 +726,24 @@ function avgPt(lm,i,j){
   return {x:(a.x+b.x)/2, y:(a.y+b.y)/2};
 }
 function bodyVisible(lm){
-  return (vis(lm,LM.LSH)+vis(lm,LM.RSH)+vis(lm,LM.LHIP)+vis(lm,LM.RHIP))/4 > 0.5;
+  return (vis(lm,LM.LSH)+vis(lm,LM.RSH)+vis(lm,LM.LHIP)+vis(lm,LM.RHIP))/4 > 0.4;
 }
 function heelsVisible(lm){
-  return vis(lm,LM.LANK)>0.5 && vis(lm,LM.RANK)>0.5;
+  return vis(lm,LM.LANK)>0.35 && vis(lm,LM.RANK)>0.35;
 }
 
 /* ---------- rep detectors ---------- */
 const REP_GAP = 700;
+const GATE_WINDOW = 5; // frames of tolerance: a single bad-angle frame won't block a real rep
 class BaseDetector{
   constructor(){ this.reset(); }
-  reset(){ this.phase='wait'; this.lastRepTime=0; this.msg=''; }
+  reset(){ this.phase='wait'; this.lastRepTime=0; this.msg=''; this._gateHist={}; }
+  gatePass(name, ok){
+    const h = this._gateHist[name] || (this._gateHist[name]=[]);
+    h.push(ok);
+    if(h.length>GATE_WINDOW) h.shift();
+    return h.some(v=>v);
+  }
   canCount(now){ return now-this.lastRepTime >= REP_GAP; }
   countRep(now){ this.lastRepTime=now; return true; }
 }
@@ -733,18 +751,19 @@ class PushupDetector extends BaseDetector{
   update(lm, now){
     this.msg='';
     if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
-    if(!heelsVisible(lm)){ this.msg='יש למקם את המצלמה כך שהעקבים נראים'; return false; }
     const shoulder = avgPt(lm,LM.LSH,LM.RSH), elbow = avgPt(lm,LM.LEL,LM.REL), wrist = avgPt(lm,LM.LWR,LM.RWR);
     const heel = avgPt(lm,LM.LANK,LM.RANK), knee = avgPt(lm,LM.LKNEE,LM.RKNEE);
     const elbowAngle = angleDeg(shoulder, elbow, wrist);
-    const kneesUp = knee.y < heel.y - 0.06;
-    const horizontal = Math.abs(shoulder.y-heel.y) < 0.28;
-    if(!kneesUp){ this.msg='ישרו את הברכיים — לא בכריעה'; return false; }
-    if(!horizontal){ this.msg='שמרו על גוף אופקי'; return false; }
+    const heelsOk = this.gatePass('heels', heelsVisible(lm));
+    const kneesOk = this.gatePass('knees', knee.y < heel.y - 0.05);
+    const horizOk = this.gatePass('horiz', Math.abs(shoulder.y-heel.y) < 0.32);
+    if(!heelsOk){ this.msg='יש למקם את המצלמה כך שהעקבים נראים'; return false; }
+    if(!kneesOk){ this.msg='ישרו את הברכיים — לא בכריעה'; return false; }
+    if(!horizOk){ this.msg='שמרו על גוף אופקי'; return false; }
     let counted=false;
-    if(this.phase!=='down' && elbowAngle<105) this.phase='down';
-    else if(this.phase==='down' && elbowAngle>150){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
-    else if(this.phase==='wait' && elbowAngle>150) this.phase='up';
+    if(this.phase!=='down' && elbowAngle<110) this.phase='down';
+    else if(this.phase==='down' && elbowAngle>145){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && elbowAngle>145) this.phase='up';
     return counted;
   }
 }
@@ -752,18 +771,19 @@ class SquatDetector extends BaseDetector{
   update(lm, now){
     this.msg='';
     if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
-    if(!heelsVisible(lm)){ this.msg='הרחק/י את הטלפון כדי לראות את כל הגוף'; return false; }
     const shoulder = avgPt(lm,LM.LSH,LM.RSH), hip = avgPt(lm,LM.LHIP,LM.RHIP);
     const knee = avgPt(lm,LM.LKNEE,LM.RKNEE), heel = avgPt(lm,LM.LANK,LM.RANK);
     const kneeAngle = angleDeg(hip, knee, heel);
-    const standing = shoulder.y < hip.y;
-    if(!standing){ this.msg='עמדו זקוף/ה'; return false; }
+    const heelsOk = this.gatePass('heels', heelsVisible(lm));
+    const standingOk = this.gatePass('standing', shoulder.y < hip.y + 0.02);
+    if(!heelsOk){ this.msg='הרחק/י את הטלפון כדי לראות את כל הגוף'; return false; }
+    if(!standingOk){ this.msg='עמדו זקוף/ה'; return false; }
     const totalH = (heel.y-shoulder.y)||1;
     const depth = (hip.y-shoulder.y)/totalH;
     let counted=false;
-    if(this.phase!=='down' && kneeAngle<115 && depth>0.58) this.phase='down';
-    else if(this.phase==='down' && kneeAngle>163){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
-    else if(this.phase==='wait' && kneeAngle>163) this.phase='up';
+    if(this.phase!=='down' && kneeAngle<120 && depth>0.54) this.phase='down';
+    else if(this.phase==='down' && kneeAngle>158){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && kneeAngle>158) this.phase='up';
     return counted;
   }
 }
@@ -786,7 +806,7 @@ class PlankDetector extends BaseDetector{
     this.msg='';
     if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
     const shoulder = avgPt(lm,LM.LSH,LM.RSH), hip = avgPt(lm,LM.LHIP,LM.RHIP);
-    const straight = Math.abs(shoulder.y-hip.y) < 0.15;
+    const straight = Math.abs(shoulder.y-hip.y) < 0.17;
     if(!straight){ this.msg='ישרו את הגב'; this.lastTick=0; return false; }
     if(!this.lastTick) this.lastTick = now;
     const dt = now-this.lastTick; this.lastTick = now;
@@ -1015,6 +1035,17 @@ function startWorkoutSession(){
   loadExercise();
   ensureCamera();
 }
+function resizeCanvas(canvas){
+  const rect = canvas.getBoundingClientRect();
+  if(rect.width<1 || rect.height<1) return;
+  const dpr = Math.min(window.devicePixelRatio||1, 2);
+  const w = Math.round(rect.width*dpr), h = Math.round(rect.height*dpr);
+  if(canvas.width!==w || canvas.height!==h){ canvas.width=w; canvas.height=h; }
+}
+function resizeWorkoutCanvases(){
+  resizeCanvas($('demoCanvas'));
+  resizeCanvas($('liveCanvas'));
+}
 function loadExercise(){
   const ex = workout.exercises[wIdxEx];
   wDetector = makeDetector(ex.id);
@@ -1022,8 +1053,10 @@ function loadExercise(){
   $('curExName').textContent = EX[ex.id].name;
   $('repTarget').textContent = ex.id==='plank' ? ex.reps+'s' : ex.reps;
   $('repNum').textContent = 0;
+  $('exHowto').innerHTML = `<b>${EX[ex.id].name}:</b> ${EX[ex.id].howto||''}`;
   renderSetDots();
   if(wStopDemo) wStopDemo();
+  resizeWorkoutCanvases();
   wStopDemo = startAnim($('demoCanvas'), animKeyFor(ex.id), '#00e676');
 }
 function renderSetDots(){
@@ -1095,9 +1128,20 @@ async function ensureCamera(){
     mpPose.onResults(onPoseResults);
     mpCamera = new Camera(video, {
       onFrame: async ()=>{ await mpPose.send({image:video}); },
-      width:240, height:320
+      width:480, height:640,
+      facingMode:'user'
     });
     await mpCamera.start();
+    try{
+      const stream = video.srcObject;
+      const track = stream && stream.getVideoTracks && stream.getVideoTracks()[0];
+      if(track && track.getCapabilities){
+        const caps = track.getCapabilities();
+        if(caps.zoom && caps.zoom.min!=null && caps.zoom.min<caps.zoom.max){
+          await track.applyConstraints({advanced:[{zoom:caps.zoom.min}]});
+        }
+      }
+    }catch(zoomErr){ /* optical zoom-out not supported on this device/browser — ignore */ }
   }catch(e){
     $('workoutMsg').textContent = 'לא ניתן לגשת למצלמה: ' + (e && e.message ? e.message : e);
   }
@@ -1111,7 +1155,7 @@ function onPoseResults(results){
   const liveCanvas = $('liveCanvas');
   drawLiveSkeleton(liveCanvas.getContext('2d'), liveCanvas.width, liveCanvas.height, curLandmarks);
   if(!curLandmarks || !workout) return;
-  const livePts = curLandmarks.filter(p=>p.visibility>0.5).length;
+  const livePts = curLandmarks.filter(p=>p.visibility>0.35).length;
   if(livePts<3) return;
   const now = performance.now();
   if(inMaxChallenge){
@@ -1182,7 +1226,9 @@ function renderBoard(){
 }
 
 /* ---------- stages path + detail modal ---------- */
-const STAGE_STEP_H = 74;
+const STAGE_ROW_SIZE = 5;   // stages per horizontal row
+const STAGE_ROW_H = 90;     // px between row centers
+const STAGE_XPOS = [12,31,50,69,88]; // percent, left-to-right slots in a row
 function stageAccessLevel(stageNum){
   if(CUR_USER.isAdmin) return 'admin';
   if(stageNum<=CUR_USER.stage) return 'passed';
@@ -1190,18 +1236,29 @@ function stageAccessLevel(stageNum){
   return 'far';
 }
 function renderStagesPath(){
-  const total=1000, totalH=total*STAGE_STEP_H, xL=18, xR=82;
+  const total=1000;
+  const rows = Math.ceil(total/STAGE_ROW_SIZE);
+  const totalH = rows*STAGE_ROW_H;
   const lang = CUR_USER.lang;
-  let pts=[];
-  for(let i=1;i<=total;i++){
-    const x=(i%2===1)?xR:xL;
-    const y=totalH-(i-1)*STAGE_STEP_H-STAGE_STEP_H/2;
-    pts.push(x+','+y);
+  let bars='', connectors='', nodes='';
+  for(let r=0;r<rows;r++){
+    const rowCenterY = r*STAGE_ROW_H + STAGE_ROW_H/2;
+    const lastStageInRow = Math.min(total, (r+1)*STAGE_ROW_SIZE);
+    const rowDone = lastStageInRow<=CUR_USER.stage;
+    bars += `<div class="stage-row-bar ${rowDone?'done':''}" style="bottom:${rowCenterY-2}px; left:${STAGE_XPOS[0]}%; right:${100-STAGE_XPOS[4]}%;"></div>`;
+    if(r<rows-1){
+      const connX = (r%2===0) ? STAGE_XPOS[4] : STAGE_XPOS[0];
+      const nextStageFirst = (r+1)*STAGE_ROW_SIZE+1;
+      const connDone = nextStageFirst<=CUR_USER.stage;
+      connectors += `<div class="stage-connector ${connDone?'done':''}" style="bottom:${rowCenterY}px; left:${connX}%; height:${STAGE_ROW_H}px;"></div>`;
+    }
   }
-  let nodes='';
   for(let i=1;i<=total;i++){
-    const x=(i%2===1)?xR:xL;
-    const bottom=(i-1)*STAGE_STEP_H;
+    const r = Math.floor((i-1)/STAGE_ROW_SIZE);
+    const p = (i-1)%STAGE_ROW_SIZE;
+    const dir = (r%2===0) ? p : (STAGE_ROW_SIZE-1-p);
+    const x = STAGE_XPOS[dir];
+    const bottom = r*STAGE_ROW_H + STAGE_ROW_H/2;
     const lvl = stageAccessLevel(i);
     let cls='stage-node';
     if(i===CUR_USER.stage) cls+=' cur';
@@ -1213,10 +1270,7 @@ function renderStagesPath(){
   }
   return `<div class="card stage-progress-head"><div><b>${tr(lang,'yourStage')}:</b> ${CUR_USER.stage} / 1000</div></div>
     <div class="stage-path-wrap" id="stagePathWrap" style="height:${totalH}px;">
-      <svg class="stage-path-svg" viewBox="0 0 100 ${totalH}" preserveAspectRatio="none">
-        <polyline points="${pts.join(' ')}" fill="none" stroke="var(--border)" stroke-width="2"/>
-      </svg>
-      ${nodes}
+      ${bars}${connectors}${nodes}
     </div>`;
 }
 function openStageDetail(stageNum){
@@ -1253,11 +1307,13 @@ function startMaxChallenge(){
   $('wDone').classList.add('hidden');
   $('wActive').classList.remove('hidden');
   $('curExName').textContent = '⚔️ אתגר מקסימום: ' + EX[CHALLENGE_SEQ[0]].name;
+  $('exHowto').innerHTML = `<b>${EX[CHALLENGE_SEQ[0]].name}:</b> ${EX[CHALLENGE_SEQ[0]].howto||''}`;
   $('repTarget').textContent = '∞';
   $('repNum').textContent = 0;
   $('setDots').innerHTML = '';
   wDetector = makeDetector(CHALLENGE_SEQ[0]);
   if(wStopDemo) wStopDemo();
+  resizeWorkoutCanvases();
   wStopDemo = startAnim($('demoCanvas'), animKeyFor(CHALLENGE_SEQ[0]), '#00e676');
   ensureCamera();
 }
@@ -1274,6 +1330,7 @@ function handleChallengeFrame(lm, now){
     const nextId = CHALLENGE_SEQ[mcSeqIdx];
     wDetector = makeDetector(nextId);
     $('curExName').textContent = '⚔️ אתגר מקסימום: ' + EX[nextId].name;
+    $('exHowto').innerHTML = `<b>${EX[nextId].name}:</b> ${EX[nextId].howto||''}`;
     if(wStopDemo) wStopDemo();
     wStopDemo = startAnim($('demoCanvas'), animKeyFor(nextId), '#00e676');
   }
@@ -1303,7 +1360,7 @@ function shareWhatsApp(){
 
 /* ---------- groups ---------- */
 function genGroupId(){ return 'g'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
-function codeFromId(id){ return id.slice(-6).toUpperCase(); }
+function genRandomCode(){ return Math.random().toString(36).slice(2,8).toUpperCase(); }
 function renderGroup(){
   const gdb = loadGrp();
   const gid = CUR_USER.groupId;
@@ -1322,19 +1379,26 @@ function renderGroup(){
   } else {
     $('grpNone').classList.remove('hidden');
     $('grpHas').classList.add('hidden');
+    if(!$('grpCodeCreateIn').value) $('grpCodeCreateIn').value = genRandomCode();
   }
 }
 function createGroup(){
   const name = $('grpNameIn').value.trim();
   if(!name) return;
   const emoji = $('grpEmojiIn').value;
+  let code = $('grpCodeCreateIn').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(!code) code = genRandomCode();
   const gdb = loadGrp();
+  if(Object.values(gdb.groups).some(g=>g.code===code)){
+    alert('הקוד הזה כבר תפוס, בחרו קוד אחר');
+    return;
+  }
   const id = genGroupId();
-  const code = codeFromId(id);
   gdb.groups[id] = {name, emoji, code, owner:CUR_KEY, members:[CUR_KEY]};
   saveGrp(gdb);
   CUR_USER.groupId = id;
   persistCurUser();
+  $('grpCodeCreateIn').value = '';
   renderGroup();
 }
 function joinGroupByCode(code){
@@ -1445,6 +1509,20 @@ function enterApp(){
 }
 
 function wireEvents(){
+  let resizeT;
+  window.addEventListener('resize', ()=>{
+    clearTimeout(resizeT);
+    resizeT = setTimeout(()=>{
+      if(curTab==='tabWorkout' && !$('wActive').classList.contains('hidden')){
+        resizeWorkoutCanvases();
+        const exId = inMaxChallenge ? CHALLENGE_SEQ[mcSeqIdx] : (workout && workout.exercises[wIdxEx].id);
+        if(exId){
+          if(wStopDemo) wStopDemo();
+          wStopDemo = startAnim($('demoCanvas'), animKeyFor(exId), '#00e676');
+        }
+      }
+    }, 250);
+  });
   let mode='login';
   $('authToggle').onclick = ()=>{
     mode = mode==='login' ? 'register' : 'login';
