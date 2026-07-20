@@ -71,6 +71,7 @@ input,select{font-family:inherit; outline:none;}
 /* workout */
 .canvas-wrap{display:flex; gap:8px; margin-bottom:12px;}
 .canvas-box{flex:1; position:relative; background:#000; border-radius:14px; overflow:hidden; aspect-ratio:3/4; border:2px solid var(--border);}
+.canvas-box.wide{aspect-ratio:4/3;}
 .canvas-box.demo{border-color:var(--g);}
 .canvas-box.live{border-color:var(--warn);}
 .canvas-box canvas, .canvas-box video{width:100%; height:100%; position:absolute; inset:0;}
@@ -110,6 +111,8 @@ input,select{font-family:inherit; outline:none;}
 .stage-node.cur{background:var(--warn); border-color:var(--warn); color:#04140b; box-shadow:0 0 0 5px rgba(255,171,64,.22);}
 .stage-node.near{background:var(--bg4); border-color:var(--warn); color:var(--warn);}
 .stage-node.far{opacity:.5;}
+.stage-scroll-btns{position:sticky; bottom:90px; z-index:15; display:flex; flex-direction:column; gap:8px; align-items:flex-end; pointer-events:none;}
+.stage-scroll-btns button{pointer-events:auto; box-shadow:0 2px 8px rgba(0,0,0,.4);}
 
 /* stage modal */
 #stageModal .exrow{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-size:13px;}
@@ -752,12 +755,19 @@ class PushupDetector extends BaseDetector{
     this.msg='';
     if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
     const shoulder = avgPt(lm,LM.LSH,LM.RSH), elbow = avgPt(lm,LM.LEL,LM.REL), wrist = avgPt(lm,LM.LWR,LM.RWR);
-    const heel = avgPt(lm,LM.LANK,LM.RANK), knee = avgPt(lm,LM.LKNEE,LM.RKNEE);
+    const knee = avgPt(lm,LM.LKNEE,LM.RKNEE), hip = avgPt(lm,LM.LHIP,LM.RHIP);
     const elbowAngle = angleDeg(shoulder, elbow, wrist);
-    const heelsOk = this.gatePass('heels', heelsVisible(lm));
-    const kneesOk = this.gatePass('knees', knee.y < heel.y - 0.05);
-    const horizOk = this.gatePass('horiz', Math.abs(shoulder.y-heel.y) < 0.32);
-    if(!heelsOk){ this.msg='יש למקם את המצלמה כך שהעקבים נראים'; return false; }
+    const ankleSeen = heelsVisible(lm);
+    // anti-cheat (sagging knees / non-horizontal body) only enforced when the reference points
+    // needed to check it are actually visible — never block counting just because feet are out of frame
+    let kneesOk = true, horizOk = true;
+    if(ankleSeen){
+      const heel = avgPt(lm,LM.LANK,LM.RANK);
+      kneesOk = this.gatePass('knees', knee.y < heel.y - 0.05);
+      horizOk = this.gatePass('horiz', Math.abs(shoulder.y-heel.y) < 0.32);
+    } else {
+      horizOk = this.gatePass('horiz2', Math.abs(shoulder.y-hip.y) < 0.2);
+    }
     if(!kneesOk){ this.msg='ישרו את הברכיים — לא בכריעה'; return false; }
     if(!horizOk){ this.msg='שמרו על גוף אופקי'; return false; }
     let counted=false;
@@ -772,18 +782,31 @@ class SquatDetector extends BaseDetector{
     this.msg='';
     if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
     const shoulder = avgPt(lm,LM.LSH,LM.RSH), hip = avgPt(lm,LM.LHIP,LM.RHIP);
-    const knee = avgPt(lm,LM.LKNEE,LM.RKNEE), heel = avgPt(lm,LM.LANK,LM.RANK);
-    const kneeAngle = angleDeg(hip, knee, heel);
-    const heelsOk = this.gatePass('heels', heelsVisible(lm));
+    const knee = avgPt(lm,LM.LKNEE,LM.RKNEE);
     const standingOk = this.gatePass('standing', shoulder.y < hip.y + 0.02);
-    if(!heelsOk){ this.msg='הרחק/י את הטלפון כדי לראות את כל הגוף'; return false; }
     if(!standingOk){ this.msg='עמדו זקוף/ה'; return false; }
-    const totalH = (heel.y-shoulder.y)||1;
-    const depth = (hip.y-shoulder.y)/totalH;
+    const ankleSeen = heelsVisible(lm);
+    let downCond, upCond;
+    if(ankleSeen){
+      // ankles visible: use the precise knee angle + hip-drop depth
+      const heel = avgPt(lm,LM.LANK,LM.RANK);
+      const kneeAngle = angleDeg(hip, knee, heel);
+      const totalH = (heel.y-shoulder.y)||1;
+      const depth = (hip.y-shoulder.y)/totalH;
+      downCond = kneeAngle<120 && depth>0.5;
+      upCond = kneeAngle>158;
+    } else {
+      // ankles out of frame (very common — you'd otherwise need to stand far back):
+      // fall back to how close the hip has dropped toward the knee, relative to torso length
+      const torsoLen = (hip.y-shoulder.y)||1;
+      const kneeBend = (knee.y-hip.y)/torsoLen;
+      downCond = kneeBend < 0.55;
+      upCond = kneeBend > 0.85;
+    }
     let counted=false;
-    if(this.phase!=='down' && kneeAngle<120 && depth>0.54) this.phase='down';
-    else if(this.phase==='down' && kneeAngle>158){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
-    else if(this.phase==='wait' && kneeAngle>158) this.phase='up';
+    if(this.phase!=='down' && downCond) this.phase='down';
+    else if(this.phase==='down' && upCond){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && upCond) this.phase='up';
     return counted;
   }
 }
@@ -850,28 +873,33 @@ function lerpFrame(fa,fb,t){
 }
 const HUMAN_FRAMES = {
   pushup:[
-    {head:[.16,.36],shoulder:[.27,.40],elbow:[.30,.53],hand:[.31,.60],hip:[.55,.42],knee:[.72,.50],ankle:[.85,.55]},
-    {head:[.16,.50],shoulder:[.27,.52],elbow:[.33,.55],hand:[.34,.60],hip:[.55,.53],knee:[.72,.58],ankle:[.85,.60]}
+    {head:[.08,.25],shoulder:[.22,.32],elbow:[.26,.55],hand:[.30,.78],hip:[.60,.38],knee:[.80,.52],ankle:[.95,.65]},
+    {head:[.08,.50],shoulder:[.22,.58],elbow:[.28,.62],hand:[.32,.80],hip:[.60,.65],knee:[.80,.72],ankle:[.95,.78]}
   ],
   squat:[
     {head:[.5,.14],shoulder:[.5,.25],elbow:[.42,.38],hand:[.4,.5],hip:[.5,.48],knee:[.5,.65],ankle:[.5,.82]},
     {head:[.5,.32],shoulder:[.5,.42],elbow:[.36,.48],hand:[.56,.55],hip:[.5,.62],knee:[.4,.65],ankle:[.5,.82]}
   ],
   situp:[
-    {head:[.15,.55],shoulder:[.28,.55],elbow:[.2,.5],hand:[.18,.48],hip:[.55,.55],knee:[.72,.48],ankle:[.85,.58]},
-    {head:[.35,.35],shoulder:[.4,.42],elbow:[.5,.42],hand:[.55,.45],hip:[.55,.55],knee:[.72,.48],ankle:[.85,.58]}
+    {head:[.10,.65],shoulder:[.26,.65],elbow:[.16,.58],hand:[.10,.52],hip:[.55,.65],knee:[.75,.45],ankle:[.95,.60]},
+    {head:[.32,.28],shoulder:[.40,.40],elbow:[.52,.40],hand:[.62,.44],hip:[.55,.65],knee:[.75,.45],ankle:[.95,.60]}
   ],
   plank:[
-    {head:[.16,.40],shoulder:[.28,.42],elbow:[.28,.53],hand:[.28,.60],hip:[.55,.45],knee:[.72,.50],ankle:[.85,.52]},
-    {head:[.16,.41],shoulder:[.28,.43],elbow:[.28,.54],hand:[.28,.61],hip:[.55,.46],knee:[.72,.51],ankle:[.85,.53]}
+    {head:[.08,.28],shoulder:[.22,.35],elbow:[.22,.58],hand:[.22,.80],hip:[.60,.42],knee:[.80,.55],ankle:[.95,.65]},
+    {head:[.08,.30],shoulder:[.22,.37],elbow:[.22,.60],hand:[.22,.82],hip:[.60,.45],knee:[.80,.58],ankle:[.95,.68]}
   ],
   burpee:[
     {head:[.5,.14],shoulder:[.5,.25],elbow:[.44,.35],hand:[.42,.45],hip:[.5,.48],knee:[.5,.65],ankle:[.5,.82]},
-    {head:[.18,.42],shoulder:[.28,.44],elbow:[.28,.55],hand:[.28,.62],hip:[.55,.48],knee:[.72,.55],ankle:[.85,.58]},
-    {head:[.16,.50],shoulder:[.28,.52],elbow:[.33,.55],hand:[.34,.6],hip:[.55,.53],knee:[.72,.58],ankle:[.85,.6]},
+    {head:[.14,.42],shoulder:[.26,.44],elbow:[.26,.55],hand:[.26,.62],hip:[.58,.48],knee:[.78,.55],ankle:[.94,.58]},
+    {head:[.12,.50],shoulder:[.26,.52],elbow:[.30,.55],hand:[.32,.6],hip:[.58,.53],knee:[.78,.58],ankle:[.94,.6]},
     {head:[.5,.06],shoulder:[.5,.20],elbow:[.5,.10],hand:[.5,.02],hip:[.5,.44],knee:[.5,.62],ankle:[.5,.80]}
   ]
 };
+const ANIM_ORIENTATION = {pushup:'wide', situp:'wide', plank:'wide', squat:'tall', burpee:'tall'};
+function setCanvasOrientation(animKey){
+  const wide = ANIM_ORIENTATION[animKey]==='wide';
+  document.querySelectorAll('.canvas-box').forEach(b=>b.classList.toggle('wide', wide));
+}
 function animKeyFor(exId){
   if(exId==='plank') return 'plank';
   if(exId==='burpee') return 'burpee';
@@ -912,9 +940,10 @@ function startAnim(canvas, type, color, onFrame){
   const t0 = performance.now();
   function loop(now){
     if(!running) return;
-    const el = (now-t0) % CYCLE;
+    let el = (now-t0) % CYCLE;
+    if(el<0) el += CYCLE; // rAF timestamps can precede a performance.now() taken just before scheduling
     const segLen = CYCLE/frames.length;
-    const idx = Math.floor(el/segLen);
+    const idx = Math.min(frames.length-1, Math.floor(el/segLen));
     const nextIdx = (idx+1)%frames.length;
     const localT = (el%segLen)/segLen;
     const frame = lerpFrame(frames[idx], frames[nextIdx], localT);
@@ -1056,6 +1085,7 @@ function loadExercise(){
   $('exHowto').innerHTML = `<b>${EX[ex.id].name}:</b> ${EX[ex.id].howto||''}`;
   renderSetDots();
   if(wStopDemo) wStopDemo();
+  setCanvasOrientation(animKeyFor(ex.id));
   resizeWorkoutCanvases();
   wStopDemo = startAnim($('demoCanvas'), animKeyFor(ex.id), '#00e676');
 }
@@ -1222,6 +1252,10 @@ function renderBoard(){
       const curNode = wrap.querySelector('.stage-node.cur');
       if(curNode) curNode.scrollIntoView({block:'center'});
     }
+    const scrollHost = $('tabBoard');
+    const btnTop = $('btnStageScrollTop'), btnBottom = $('btnStageScrollBottom');
+    if(btnTop) btnTop.onclick = ()=>scrollHost.scrollTo({top:0, behavior:'smooth'});
+    if(btnBottom) btnBottom.onclick = ()=>scrollHost.scrollTo({top:scrollHost.scrollHeight, behavior:'smooth'});
   }
 }
 
@@ -1269,6 +1303,10 @@ function renderStagesPath(){
     nodes += `<div class="${cls}" style="bottom:${bottom}px; left:${x}%;" data-stage="${i}">${label}</div>`;
   }
   return `<div class="card stage-progress-head"><div><b>${tr(lang,'yourStage')}:</b> ${CUR_USER.stage} / 1000</div></div>
+    <div class="stage-scroll-btns">
+      <button class="iconbtn" id="btnStageScrollTop" title="⬆️">⬆️</button>
+      <button class="iconbtn" id="btnStageScrollBottom" title="⬇️">⬇️</button>
+    </div>
     <div class="stage-path-wrap" id="stagePathWrap" style="height:${totalH}px;">
       ${bars}${connectors}${nodes}
     </div>`;
@@ -1313,6 +1351,7 @@ function startMaxChallenge(){
   $('setDots').innerHTML = '';
   wDetector = makeDetector(CHALLENGE_SEQ[0]);
   if(wStopDemo) wStopDemo();
+  setCanvasOrientation(animKeyFor(CHALLENGE_SEQ[0]));
   resizeWorkoutCanvases();
   wStopDemo = startAnim($('demoCanvas'), animKeyFor(CHALLENGE_SEQ[0]), '#00e676');
   ensureCamera();
@@ -1332,6 +1371,8 @@ function handleChallengeFrame(lm, now){
     $('curExName').textContent = '⚔️ אתגר מקסימום: ' + EX[nextId].name;
     $('exHowto').innerHTML = `<b>${EX[nextId].name}:</b> ${EX[nextId].howto||''}`;
     if(wStopDemo) wStopDemo();
+    setCanvasOrientation(animKeyFor(nextId));
+    resizeWorkoutCanvases();
     wStopDemo = startAnim($('demoCanvas'), animKeyFor(nextId), '#00e676');
   }
 }
