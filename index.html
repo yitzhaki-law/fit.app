@@ -873,26 +873,26 @@ function lerpFrame(fa,fb,t){
 }
 const HUMAN_FRAMES = {
   pushup:[
-    {head:[.08,.25],shoulder:[.22,.32],elbow:[.26,.55],hand:[.30,.78],hip:[.60,.38],knee:[.80,.52],ankle:[.95,.65]},
-    {head:[.08,.50],shoulder:[.22,.58],elbow:[.28,.62],hand:[.32,.80],hip:[.60,.65],knee:[.80,.72],ankle:[.95,.78]}
+    {head:[.10,.30],shoulder:[.22,.35],elbow:[.22,.55],hand:[.22,.70],hip:[.55,.38],knee:[.75,.45],ankle:[.92,.50]},
+    {head:[.10,.48],shoulder:[.22,.52],elbow:[.24,.60],hand:[.24,.68],hip:[.55,.55],knee:[.75,.60],ankle:[.92,.63]}
   ],
   squat:[
-    {head:[.5,.14],shoulder:[.5,.25],elbow:[.42,.38],hand:[.4,.5],hip:[.5,.48],knee:[.5,.65],ankle:[.5,.82]},
-    {head:[.5,.32],shoulder:[.5,.42],elbow:[.36,.48],hand:[.56,.55],hip:[.5,.62],knee:[.4,.65],ankle:[.5,.82]}
+    {head:[.55,.10],shoulder:[.55,.22],elbow:[.53,.33],hand:[.52,.44],hip:[.55,.45],knee:[.55,.63],ankle:[.55,.82]},
+    {head:[.62,.32],shoulder:[.60,.42],elbow:[.70,.44],hand:[.80,.46],hip:[.62,.60],knee:[.42,.62],ankle:[.55,.82]}
   ],
   situp:[
-    {head:[.10,.65],shoulder:[.26,.65],elbow:[.16,.58],hand:[.10,.52],hip:[.55,.65],knee:[.75,.45],ankle:[.95,.60]},
-    {head:[.32,.28],shoulder:[.40,.40],elbow:[.52,.40],hand:[.62,.44],hip:[.55,.65],knee:[.75,.45],ankle:[.95,.60]}
+    {head:[.12,.60],shoulder:[.25,.62],elbow:[.20,.55],hand:[.15,.50],hip:[.50,.65],knee:[.68,.45],ankle:[.80,.62]},
+    {head:[.28,.30],shoulder:[.35,.40],elbow:[.32,.42],hand:[.28,.38],hip:[.50,.65],knee:[.68,.45],ankle:[.80,.62]}
   ],
   plank:[
-    {head:[.08,.28],shoulder:[.22,.35],elbow:[.22,.58],hand:[.22,.80],hip:[.60,.42],knee:[.80,.55],ankle:[.95,.65]},
-    {head:[.08,.30],shoulder:[.22,.37],elbow:[.22,.60],hand:[.22,.82],hip:[.60,.45],knee:[.80,.58],ankle:[.95,.68]}
+    {head:[.10,.28],shoulder:[.22,.33],elbow:[.22,.52],hand:[.22,.68],hip:[.55,.36],knee:[.75,.42],ankle:[.92,.48]},
+    {head:[.10,.30],shoulder:[.22,.35],elbow:[.22,.54],hand:[.22,.70],hip:[.55,.38],knee:[.75,.44],ankle:[.92,.50]}
   ],
   burpee:[
-    {head:[.5,.14],shoulder:[.5,.25],elbow:[.44,.35],hand:[.42,.45],hip:[.5,.48],knee:[.5,.65],ankle:[.5,.82]},
-    {head:[.14,.42],shoulder:[.26,.44],elbow:[.26,.55],hand:[.26,.62],hip:[.58,.48],knee:[.78,.55],ankle:[.94,.58]},
-    {head:[.12,.50],shoulder:[.26,.52],elbow:[.30,.55],hand:[.32,.6],hip:[.58,.53],knee:[.78,.58],ankle:[.94,.6]},
-    {head:[.5,.06],shoulder:[.5,.20],elbow:[.5,.10],hand:[.5,.02],hip:[.5,.44],knee:[.5,.62],ankle:[.5,.80]}
+    {head:[.55,.10],shoulder:[.55,.22],elbow:[.53,.33],hand:[.52,.44],hip:[.55,.45],knee:[.55,.63],ankle:[.55,.82]},
+    {head:[.10,.30],shoulder:[.22,.35],elbow:[.22,.55],hand:[.22,.70],hip:[.55,.38],knee:[.75,.45],ankle:[.92,.50]},
+    {head:[.10,.48],shoulder:[.22,.52],elbow:[.24,.60],hand:[.24,.68],hip:[.55,.55],knee:[.75,.60],ankle:[.92,.63]},
+    {head:[.55,.05],shoulder:[.55,.18],elbow:[.50,.12],hand:[.46,.03],hip:[.55,.42],knee:[.55,.58],ankle:[.55,.78]}
   ]
 };
 const ANIM_ORIENTATION = {pushup:'wide', situp:'wide', plank:'wide', squat:'tall', burpee:'tall'};
@@ -1156,9 +1156,12 @@ async function ensureCamera(){
     mpPose = new Pose({locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
     mpPose.setOptions({modelComplexity:1, smoothLandmarks:true, minDetectionConfidence:0.5, minTrackingConfidence:0.5});
     mpPose.onResults(onPoseResults);
+    // Request a natural landscape aspect (matches how camera sensors are actually built —
+    // phones rotate this to portrait themselves, laptops are landscape natively). Forcing an
+    // odd portrait 480x640 request here made browsers crop/zoom the sensor to match it.
     mpCamera = new Camera(video, {
       onFrame: async ()=>{ await mpPose.send({image:video}); },
-      width:480, height:640,
+      width:640, height:480,
       facingMode:'user'
     });
     await mpCamera.start();
