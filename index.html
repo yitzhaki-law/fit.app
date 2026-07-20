@@ -71,7 +71,7 @@ input,select{font-family:inherit; outline:none;}
 /* workout */
 .canvas-wrap{display:flex; gap:8px; margin-bottom:12px;}
 .canvas-box{flex:1; position:relative; background:#000; border-radius:14px; overflow:hidden; aspect-ratio:3/4; border:2px solid var(--border);}
-.canvas-box.wide{aspect-ratio:4/3;}
+.canvas-box.wide{aspect-ratio:16/9;}
 .canvas-box.demo{border-color:var(--g);}
 .canvas-box.live{border-color:var(--warn);}
 .canvas-box canvas, .canvas-box video{width:100%; height:100%; position:absolute; inset:0;}
@@ -923,7 +923,7 @@ function thickSeg(ctx, a, b, r, color){
   ctx.beginPath(); ctx.arc(a.x,a.y,r,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(b.x,b.y,r,0,Math.PI*2); ctx.fill();
 }
-function drawHuman(ctx,W,H,f,color){
+function drawHuman(ctx,W,H,f,color,showFace){
   ctx.clearRect(0,0,W,H);
   const P = k=>({x:f[k].x*W, y:f[k].y*H});
   const head=P('head'), shoulder=P('shoulder'), elbow=P('elbow'), hand=P('hand'), hip=P('hip'), knee=P('knee'), ankle=P('ankle');
@@ -934,14 +934,20 @@ function drawHuman(ctx,W,H,f,color){
   thickSeg(ctx, shoulder, elbow, rArm, color);
   thickSeg(ctx, elbow, hand, rArm2, color);
   const r = W*0.11;
-  ctx.fillStyle='#04140b';
-  ctx.beginPath(); ctx.arc(head.x,head.y,r+W*0.012,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle=color;
-  ctx.beginPath(); ctx.arc(head.x,head.y,r,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#04140b';
-  ctx.beginPath(); ctx.arc(head.x-r*0.32,head.y-r*0.08,r*0.12,0,Math.PI*2); ctx.arc(head.x+r*0.32,head.y-r*0.08,r*0.12,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='#04140b'; ctx.lineWidth=r*0.14; ctx.lineCap='round';
-  ctx.beginPath(); ctx.arc(head.x,head.y+r*0.12,r*0.38,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  if(showFace){
+    ctx.fillStyle='#04140b';
+    ctx.beginPath(); ctx.arc(head.x,head.y,r+W*0.012,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=color;
+    ctx.beginPath(); ctx.arc(head.x,head.y,r,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#04140b';
+    ctx.beginPath(); ctx.arc(head.x-r*0.32,head.y-r*0.08,r*0.12,0,Math.PI*2); ctx.arc(head.x+r*0.32,head.y-r*0.08,r*0.12,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle='#04140b'; ctx.lineWidth=r*0.14; ctx.lineCap='round';
+    ctx.beginPath(); ctx.arc(head.x,head.y+r*0.12,r*0.38,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  } else {
+    // side-on exercises: a face looking at the viewer doesn't make sense on a sideways body — plain head
+    ctx.fillStyle=color;
+    ctx.beginPath(); ctx.arc(head.x,head.y,r,0,Math.PI*2); ctx.fill();
+  }
   ctx.fillStyle='#ffab40';
   ctx.beginPath(); ctx.arc(ankle.x,ankle.y,W*0.032,0,Math.PI*2); ctx.fill();
 }
@@ -954,7 +960,8 @@ function drawGrid(ctx,W,H,color){
 function startAnim(canvas, type, color, onFrame){
   const ctx = canvas.getContext('2d');
   const W = canvas.width, H = canvas.height;
-  const frames = HUMAN_FRAMES[type] || HUMAN_FRAMES.squat;
+  const frames = HUMAN_FRAMES[type] || HUMAN_FRAMES.pushup;
+  const showFace = ANIM_ORIENTATION[type] !== 'wide';
   const CYCLE = 1600 * frames.length/2;
   let raf, running=true;
   const t0 = performance.now();
@@ -968,7 +975,7 @@ function startAnim(canvas, type, color, onFrame){
     const localT = (el%segLen)/segLen;
     const frame = lerpFrame(frames[idx], frames[nextIdx], localT);
     drawGrid(ctx,W,H,'#00e676');
-    drawHuman(ctx,W,H,frame,color);
+    drawHuman(ctx,W,H,frame,color,showFace);
     if(onFrame) onFrame(idx,localT);
     raf = requestAnimationFrame(loop);
   }
@@ -1176,12 +1183,13 @@ async function ensureCamera(){
     mpPose = new Pose({locateFile:(f)=>`https://cdn.jsdelivr.net/npm/@mediapipe/pose/${f}`});
     mpPose.setOptions({modelComplexity:1, smoothLandmarks:true, minDetectionConfidence:0.5, minTrackingConfidence:0.5});
     mpPose.onResults(onPoseResults);
-    // Request a natural landscape aspect (matches how camera sensors are actually built —
-    // phones rotate this to portrait themselves, laptops are landscape natively). Forcing an
-    // odd portrait 480x640 request here made browsers crop/zoom the sensor to match it.
+    // Request a wide landscape aspect — most camera sensors (phone and laptop alike) are
+    // natively 16:9 under the hood, so asking for a narrower 4:3 crop was still losing width
+    // at the sides. The extra width gives room for side-on exercises (pushups/plank/sit-ups)
+    // where the body stretches across the frame rather than up-down.
     mpCamera = new Camera(video, {
       onFrame: async ()=>{ await mpPose.send({image:video}); },
-      width:640, height:480,
+      width:960, height:540,
       facingMode:'user'
     });
     await mpCamera.start();
