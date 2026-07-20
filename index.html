@@ -866,11 +866,41 @@ function makeDetector(exId){
 
 /* ---------- stick figure demo animation ---------- */
 function lerp(a,b,t){ return a+(b-a)*t; }
-function lerpPt(a,b,t){ return {x:lerp(a[0],b[0],t), y:lerp(a[1],b[1],t)}; }
+function lerpAngle(a,b,t){
+  let d = b-a;
+  d = ((d+Math.PI)%(2*Math.PI)+2*Math.PI)%(2*Math.PI) - Math.PI;
+  return a+d*t;
+}
+function boneOf(base,tip){
+  const dx=tip[0]-base[0], dy=tip[1]-base[1];
+  return {len:Math.hypot(dx,dy), ang:Math.atan2(dy,dx)};
+}
+function frameBones(f){
+  return {
+    torso: boneOf(f.hip, f.shoulder),
+    headOff: boneOf(f.shoulder, f.head),
+    upperArm: boneOf(f.shoulder, f.elbow),
+    forearm: boneOf(f.elbow, f.hand),
+    thigh: boneOf(f.hip, f.knee),
+    shin: boneOf(f.knee, f.ankle)
+  };
+}
+function applyBone(base, bone){ return {x:base.x+Math.cos(bone.ang)*bone.len, y:base.y+Math.sin(bone.ang)*bone.len}; }
+// Interpolating raw joint (x,y) positions made limbs visibly shrink mid-transition whenever a
+// joint rotated a lot (the straight-line path between two elbow positions is shorter than the
+// arm itself). Instead, interpolate each bone's angle+length from its parent joint — this keeps
+// every limb a constant length throughout the animation, it only ever rotates.
 function lerpFrame(fa,fb,t){
-  const out={};
-  for(const k in fa) out[k]=lerpPt(fa[k],fb[k],t);
-  return out;
+  const ba = frameBones(fa), bb = frameBones(fb);
+  const hip = {x:lerp(fa.hip[0],fb.hip[0],t), y:lerp(fa.hip[1],fb.hip[1],t)};
+  const lerpBone = (a,b)=>({len:lerp(a.len,b.len,t), ang:lerpAngle(a.ang,b.ang,t)});
+  const shoulder = applyBone(hip, lerpBone(ba.torso,bb.torso));
+  const head = applyBone(shoulder, lerpBone(ba.headOff,bb.headOff));
+  const elbow = applyBone(shoulder, lerpBone(ba.upperArm,bb.upperArm));
+  const hand = applyBone(elbow, lerpBone(ba.forearm,bb.forearm));
+  const knee = applyBone(hip, lerpBone(ba.thigh,bb.thigh));
+  const ankle = applyBone(knee, lerpBone(ba.shin,bb.shin));
+  return {head, shoulder, elbow, hand, hip, knee, ankle};
 }
 const HUMAN_FRAMES = {
   pushup:[
