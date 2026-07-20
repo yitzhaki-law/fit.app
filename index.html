@@ -70,6 +70,7 @@ input,select{font-family:inherit; outline:none;}
 
 /* workout */
 .canvas-wrap{display:flex; gap:8px; margin-bottom:12px;}
+.canvas-wrap.stacked{flex-direction:column;}
 .canvas-box{flex:1; position:relative; background:#000; border-radius:14px; overflow:hidden; aspect-ratio:3/4; border:2px solid var(--border);}
 .canvas-box.wide{aspect-ratio:16/9;}
 .canvas-box.demo{border-color:var(--g);}
@@ -211,7 +212,7 @@ input,select{font-family:inherit; outline:none;}
       </div>
       <div id="wActive" class="hidden">
         <div class="ex-name" id="curExName">-</div>
-        <div class="canvas-wrap">
+        <div class="canvas-wrap" id="canvasWrap">
           <div class="canvas-box demo">
             <span class="canvas-label" data-t="demo">דוגמא</span>
             <canvas id="demoCanvas" width="240" height="320"></canvas>
@@ -936,6 +937,10 @@ const ANIM_ORIENTATION = {pushup:'wide', situp:'wide', plank:'wide', jumping_jac
 function setCanvasOrientation(animKey){
   const wide = ANIM_ORIENTATION[animKey]==='wide';
   document.querySelectorAll('.canvas-box').forEach(b=>b.classList.toggle('wide', wide));
+  // side-on exercises (wide boxes) get squeezed too short if kept side-by-side on a narrow
+  // phone screen — stack them vertically instead so each gets the full screen width
+  const wrap = document.getElementById('canvasWrap');
+  if(wrap) wrap.classList.toggle('stacked', wide);
 }
 function animKeyFor(exId){
   if(HUMAN_FRAMES[exId]) return exId;
