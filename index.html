@@ -647,31 +647,20 @@ function persistCurUser(){ const db=loadDB(); db.users[CUR_KEY]=CUR_USER; saveDB
 /* ---------- exercise / tier system ---------- */
 const EX = {
   pushup_reg:{name:'שכיבות סמיכה רגילות', cat:'pushups', howto:'שכבו על הבטן, ידיים ברוחב הכתפיים. הורידו את החזה כמעט עד הרצפה (מרפק מתחת ל-105°) ודחפו בחזרה עד יישור מלא. שמרו על הגוף כקו ישר מהכתפיים ועד העקבים, בלי לשקוע בברכיים.'},
-  squat_reg:{name:'סקוואטים רגילים', cat:'squats', howto:'עמדו רגליים ברוחב האגן. רדו למטה כאילו יושבים על כיסא, ירכיים עד קרוב לגובה הברכיים, גב ישר. דחפו מהעקבים חזרה למעלה ליישור מלא של הברכיים.'},
   situp:{name:'כפיפות בטן', cat:'situps', howto:'שכבו על הגב, ברכיים כפופות. הרימו את פלג הגוף העליון קדימה עד שהכתפיים מתרחקות משמעותית מהרצפה, ואז חיזרו לשכיבה מלאה בשליטה.'},
-  pushup_wide:{name:'שכיבות רחבות', cat:'pushups', howto:'כמו שכיבת סמיכה רגילה, אך ידיים רחבות יותר מרוחב הכתפיים. מדגיש את החזה. ירדו עד מרפק חד וחזרו ליישור מלא.'},
-  lunge:{name:"לאנג'ים", cat:'other', howto:'צעד גדול קדימה, הורידו את הברך האחורית כמעט עד הרצפה כשהברך הקדמית בזווית של כ-90°, ודחפו חזרה לעמידה. החליפו רגליים.'},
-  bicycle:{name:'כפיפות אופניים', cat:'situps', howto:'שכבו על הגב, ידיים מאחורי הראש. הביאו מרפק ימין לברך שמאל תוך יישור הרגל הנגדית, ואז החליפו צד בתנועת פדלים.'},
+  jumping_jack:{name:'קפיצות פיסוק', cat:'other', howto:'עמדו עם רגליים צמודות וידיים לצד הגוף. קפצו תוך פיסוק רגליים והרמת ידיים מעל הראש, ואז קפצו בחזרה למצב ההתחלתי. תנועה רציפה וקצבית.'},
+  bicep_curl:{name:'כפיפות מרפק', cat:'other', howto:'עמדו זקוף/ה עם משקולת או בקבוק מים בכל יד, מרפקים צמודים לגוף. כופפו את המרפקים והרימו את הידיים לכיוון הכתפיים, ואז הורידו לאט ליישור מלא.'},
   plank:{name:'פלאנק', cat:'other', howto:'תמכו על האמות ועל קצות כפות הרגליים, גוף ישר לגמרי מכתפיים ועד עקבים. הפעילו את הבטן והחזיקו ללא שקיעה באגן.'},
-  pushup_close:{name:'שכיבות צמודות', cat:'pushups', howto:'שכיבת סמיכה עם ידיים צמודות מתחת לחזה, מרפקים צמודים לגוף. מדגיש את הזרוע האחורית (טרייספס).'},
-  pike:{name:'פייק', cat:'other', howto:'ממצב שכיבת סמיכה, הרימו את האגן גבוה כך שהגוף יוצר "V" הפוך, ואז כופפו מרפקים והורידו את הראש לכיוון הרצפה בין הידיים.'},
-  squat_jump:{name:'סקוואטים קפיצה', cat:'squats', howto:'בצעו סקוואט רגיל ובעלייה קפצו בפיצוץ למעלה, נחתו רך בחזרה לעומק הסקוואט.'},
-  legraise:{name:'הרמות רגליים', cat:'situps', howto:'שכבו על הגב, ידיים לצדדים. הרימו את הרגליים הישרות עד זווית של כ-90°, ואז הורידו לאט בלי לגעת ברצפה.'},
-  mountain:{name:'טיפוס הר', cat:'other', howto:'ממצב פלאנק על הידיים, הביאו ברך אחת לכיוון החזה במהירות והחליפו רגליים ברצף ריצה מהיר.'},
-  diamond:{name:'יהלום', cat:'pushups', howto:'שכיבת סמיכה עם האגודלים והאצבעות המורות נוגעים ויוצרים צורת יהלום מתחת לחזה. מדגיש טרייספס וחזה פנימי.'},
-  lunge_jump:{name:"לאנג'ים קפיצה", cat:'other', howto:'מעמדת לאנג\', קפצו והחליפו רגליים באוויר, נחתו ישר ללאנג\' בצד השני.'},
-  bulgarian:{name:'סקוואטים בולגריים', cat:'squats', howto:'הניחו כף רגל אחורית מוגבהת (על ספסל/כיסא), רדו בסקוואט על הרגל הקדמית עד זווית 90° וחזרו למעלה.'},
-  vup:{name:'V-ups', cat:'situps', howto:'שכבו על הגב, ידיים ורגליים ישרות. הרימו ידיים ורגליים יחד במקביל ליצירת צורת "V", געו בקצות הרגליים, וחזרו לשכיבה.'},
-  burpee:{name:'בורפי', cat:'other', howto:'מעמידה רדו לכריעה, קפצו לפלאנק, בצעו שכיבת סמיכה (אופציונלי), קפצו חזרה לכריעה וקפצו למעלה בפיצוץ עם ידיים באוויר.'},
-  archer:{name:"ארצ'ר", cat:'pushups', howto:'שכיבת סמיכה עם ידיים רחבות מאוד. הורידו את הגוף לכיוון יד אחת בזמן שהיד השנייה נשארת כמעט ישרה בצד, החליפו צד בכל חזרה.'},
-  pistol:{name:'סקוואטים חד-רגל', cat:'squats', howto:'עמדו על רגל אחת, השנייה מורמת קדימה ישרה. רדו לעומק סקוואט מלא על הרגל התומכת תוך שמירה על שיווי משקל, וחזרו למעלה.'}
+  shoulder_press:{name:'לחיצת כתפיים', cat:'other', howto:'החזיקו משקולות או בקבוקי מים בגובה הכתפיים. דחפו את הידיים ישר למעלה מעל הראש עד יישור מלא, ואז הורידו בשליטה בחזרה לגובה הכתפיים.'},
+  high_knees:{name:'ברכיים גבוהות', cat:'other', howto:'רוצו במקום תוך הרמת ברכיים גבוה, לפחות עד גובה הירכיים, בקצב מהיר. ידיים זזות בטבעיות בתנועת ריצה.'},
+  pushup_wide:{name:'שכיבות רחבות', cat:'pushups', howto:'כמו שכיבת סמיכה רגילה, אך ידיים רחבות יותר מרוחב הכתפיים. מדגיש את החזה. ירדו עד מרפק חד וחזרו ליישור מלא.'},
+  pushup_diamond:{name:'שכיבות יהלום', cat:'pushups', howto:'שכיבת סמיכה עם האגודלים והאצבעות המורות נוגעים ויוצרים צורת יהלום מתחת לחזה. מדגיש טרייספס וחזה פנימי.'}
 };
 const TIERS = [
-  {min:1,   add:['pushup_reg','squat_reg','situp']},
-  {min:10,  add:['pushup_wide','lunge','bicycle','plank']},
-  {min:30,  add:['pushup_close','pike','squat_jump','legraise','mountain']},
-  {min:80,  add:['diamond','lunge_jump','bulgarian','vup','burpee']},
-  {min:200, add:['archer','pistol']}
+  {min:1,   add:['pushup_reg','situp','jumping_jack']},
+  {min:15,  add:['bicep_curl','plank']},
+  {min:50,  add:['shoulder_press','high_knees']},
+  {min:150, add:['pushup_wide','pushup_diamond']}
 ];
 function unlockedPool(stage){
   let pool = [];
@@ -682,7 +671,7 @@ function numExercisesFor(stage){ return stage<20?2 : stage<200?3 : 4; }
 function numSetsFor(stage){ return Math.max(2, Math.min(6, 2+Math.floor(stage/250))); }
 function repsFor(stage, exId){
   let base = Math.round(8 + 11*Math.log10(stage+1));
-  const hard = new Set(['diamond','archer','pistol','burpee','vup','lunge_jump','squat_jump','pike']);
+  const hard = new Set(['pushup_diamond']);
   if(hard.has(exId)) base = Math.round(base*0.65);
   return Math.max(5, Math.min(40, base));
 }
@@ -777,36 +766,62 @@ class PushupDetector extends BaseDetector{
     return counted;
   }
 }
-class SquatDetector extends BaseDetector{
+class JumpingJackDetector extends BaseDetector{
   update(lm, now){
     this.msg='';
     if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
-    const shoulder = avgPt(lm,LM.LSH,LM.RSH), hip = avgPt(lm,LM.LHIP,LM.RHIP);
-    const knee = avgPt(lm,LM.LKNEE,LM.RKNEE);
-    const standingOk = this.gatePass('standing', shoulder.y < hip.y + 0.02);
-    if(!standingOk){ this.msg='עמדו זקוף/ה'; return false; }
-    const ankleSeen = heelsVisible(lm);
-    let downCond, upCond;
-    if(ankleSeen){
-      // ankles visible: use the precise knee angle + hip-drop depth
-      const heel = avgPt(lm,LM.LANK,LM.RANK);
-      const kneeAngle = angleDeg(hip, knee, heel);
-      const totalH = (heel.y-shoulder.y)||1;
-      const depth = (hip.y-shoulder.y)/totalH;
-      downCond = kneeAngle<120 && depth>0.5;
-      upCond = kneeAngle>158;
-    } else {
-      // ankles out of frame (very common — you'd otherwise need to stand far back):
-      // fall back to how close the hip has dropped toward the knee, relative to torso length
-      const torsoLen = (hip.y-shoulder.y)||1;
-      const kneeBend = (knee.y-hip.y)/torsoLen;
-      downCond = kneeBend < 0.55;
-      upCond = kneeBend > 0.85;
-    }
+    const shoulder = avgPt(lm,LM.LSH,LM.RSH), wrist = avgPt(lm,LM.LWR,LM.RWR);
+    const armsUp = wrist.y < shoulder.y - 0.08;
+    const armsDown = wrist.y > shoulder.y + 0.05;
     let counted=false;
-    if(this.phase!=='down' && downCond) this.phase='down';
-    else if(this.phase==='down' && upCond){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
-    else if(this.phase==='wait' && upCond) this.phase='up';
+    if(this.phase!=='up' && armsUp) this.phase='up';
+    else if(this.phase==='up' && armsDown){ this.phase='down'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && armsDown) this.phase='down';
+    return counted;
+  }
+}
+class BicepCurlDetector extends BaseDetector{
+  update(lm, now){
+    this.msg='';
+    if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
+    const shoulder = avgPt(lm,LM.LSH,LM.RSH), elbow = avgPt(lm,LM.LEL,LM.REL), wrist = avgPt(lm,LM.LWR,LM.RWR);
+    const elbowAngle = angleDeg(shoulder, elbow, wrist);
+    let counted=false;
+    if(this.phase!=='up' && elbowAngle<60) this.phase='up';
+    else if(this.phase==='up' && elbowAngle>150){ this.phase='down'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && elbowAngle>150) this.phase='down';
+    return counted;
+  }
+}
+class ShoulderPressDetector extends BaseDetector{
+  update(lm, now){
+    this.msg='';
+    if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
+    const shoulder = avgPt(lm,LM.LSH,LM.RSH), wrist = avgPt(lm,LM.LWR,LM.RWR);
+    const nose = lm[LM.NOSE];
+    const headY = (nose && vis(lm,LM.NOSE)>0.3) ? nose.y : shoulder.y-0.15;
+    const up = wrist.y < headY - 0.03;
+    const down = wrist.y > shoulder.y - 0.02;
+    let counted=false;
+    if(this.phase!=='up' && up) this.phase='up';
+    else if(this.phase==='up' && down){ this.phase='down'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && down) this.phase='down';
+    return counted;
+  }
+}
+class HighKneesDetector extends BaseDetector{
+  update(lm, now){
+    this.msg='';
+    if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
+    const hip = avgPt(lm,LM.LHIP,LM.RHIP);
+    const kneeL = lm[LM.LKNEE], kneeR = lm[LM.RKNEE];
+    const kneeY = Math.min(vis(lm,LM.LKNEE)>0.3?kneeL.y:1, vis(lm,LM.RKNEE)>0.3?kneeR.y:1);
+    const up = kneeY < hip.y + 0.05;
+    const down = kneeY > hip.y + 0.20;
+    let counted=false;
+    if(this.phase!=='up' && up) this.phase='up';
+    else if(this.phase==='up' && down){ this.phase='down'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
+    else if(this.phase==='wait' && down) this.phase='down';
     return counted;
   }
 }
@@ -838,29 +853,15 @@ class PlankDetector extends BaseDetector{
     return false;
   }
 }
-class BurpeeDetector extends BaseDetector{
-  update(lm, now){
-    this.msg='';
-    if(!bodyVisible(lm)){ this.msg='מתקשה לראות אותך — התרחק/י מהמצלמה'; return false; }
-    const shoulder = avgPt(lm,LM.LSH,LM.RSH);
-    let counted=false;
-    if(this.phase!=='down' && shoulder.y>0.55) this.phase='down';
-    else if(this.phase==='down' && shoulder.y<0.42){ this.phase='up'; if(this.canCount(now)){ this.countRep(now); counted=true; } }
-    else if(this.phase==='wait' && shoulder.y<0.42) this.phase='up';
-    return counted;
-  }
-}
-class GenericSquatLikeDetector extends SquatDetector{}
-class GenericPushupLikeDetector extends PushupDetector{}
-class GenericSitupLikeDetector extends SitupDetector{}
 function makeDetector(exId){
-  const cat = EX[exId] ? EX[exId].cat : 'other';
   if(exId==='plank') return new PlankDetector();
-  if(exId==='burpee') return new BurpeeDetector();
-  if(cat==='pushups') return new GenericPushupLikeDetector();
-  if(cat==='squats') return new GenericSquatLikeDetector();
-  if(cat==='situps') return new GenericSitupLikeDetector();
-  return new GenericSquatLikeDetector();
+  if(exId==='jumping_jack') return new JumpingJackDetector();
+  if(exId==='bicep_curl') return new BicepCurlDetector();
+  if(exId==='shoulder_press') return new ShoulderPressDetector();
+  if(exId==='high_knees') return new HighKneesDetector();
+  const cat = EX[exId] ? EX[exId].cat : 'other';
+  if(cat==='situps') return new SitupDetector();
+  return new PushupDetector();
 }
 
 /* ---------- stick figure demo animation ---------- */
@@ -876,10 +877,6 @@ const HUMAN_FRAMES = {
     {head:[.10,.30],shoulder:[.22,.35],elbow:[.22,.55],hand:[.22,.70],hip:[.55,.38],knee:[.75,.45],ankle:[.92,.50]},
     {head:[.10,.48],shoulder:[.22,.52],elbow:[.24,.60],hand:[.24,.68],hip:[.55,.55],knee:[.75,.60],ankle:[.92,.63]}
   ],
-  squat:[
-    {head:[.55,.10],shoulder:[.55,.22],elbow:[.53,.33],hand:[.52,.44],hip:[.55,.45],knee:[.55,.63],ankle:[.55,.82]},
-    {head:[.62,.32],shoulder:[.60,.42],elbow:[.70,.44],hand:[.80,.46],hip:[.62,.60],knee:[.42,.62],ankle:[.55,.82]}
-  ],
   situp:[
     {head:[.12,.60],shoulder:[.25,.62],elbow:[.20,.55],hand:[.15,.50],hip:[.50,.65],knee:[.68,.45],ankle:[.80,.62]},
     {head:[.28,.30],shoulder:[.35,.40],elbow:[.32,.42],hand:[.28,.38],hip:[.50,.65],knee:[.68,.45],ankle:[.80,.62]}
@@ -888,42 +885,63 @@ const HUMAN_FRAMES = {
     {head:[.10,.28],shoulder:[.22,.33],elbow:[.22,.52],hand:[.22,.68],hip:[.55,.36],knee:[.75,.42],ankle:[.92,.48]},
     {head:[.10,.30],shoulder:[.22,.35],elbow:[.22,.54],hand:[.22,.70],hip:[.55,.38],knee:[.75,.44],ankle:[.92,.50]}
   ],
-  burpee:[
-    {head:[.55,.10],shoulder:[.55,.22],elbow:[.53,.33],hand:[.52,.44],hip:[.55,.45],knee:[.55,.63],ankle:[.55,.82]},
-    {head:[.10,.30],shoulder:[.22,.35],elbow:[.22,.55],hand:[.22,.70],hip:[.55,.38],knee:[.75,.45],ankle:[.92,.50]},
-    {head:[.10,.48],shoulder:[.22,.52],elbow:[.24,.60],hand:[.24,.68],hip:[.55,.55],knee:[.75,.60],ankle:[.92,.63]},
-    {head:[.55,.05],shoulder:[.55,.18],elbow:[.50,.12],hand:[.46,.03],hip:[.55,.42],knee:[.55,.58],ankle:[.55,.78]}
+  jumping_jack:[
+    {head:[.5,.10],shoulder:[.5,.22],elbow:[.5,.35],hand:[.5,.48],hip:[.5,.45],knee:[.5,.63],ankle:[.5,.82]},
+    {head:[.5,.10],shoulder:[.5,.22],elbow:[.64,.12],hand:[.70,.02],hip:[.5,.45],knee:[.66,.63],ankle:[.78,.82]}
+  ],
+  bicep_curl:[
+    {head:[.5,.10],shoulder:[.5,.22],elbow:[.48,.38],hand:[.46,.55],hip:[.5,.45],knee:[.5,.63],ankle:[.5,.82]},
+    {head:[.5,.10],shoulder:[.5,.22],elbow:[.48,.38],hand:[.60,.26],hip:[.5,.45],knee:[.5,.63],ankle:[.5,.82]}
+  ],
+  shoulder_press:[
+    {head:[.5,.10],shoulder:[.5,.22],elbow:[.62,.25],hand:[.64,.20],hip:[.5,.45],knee:[.5,.63],ankle:[.5,.82]},
+    {head:[.5,.10],shoulder:[.5,.22],elbow:[.56,.10],hand:[.58,.01],hip:[.5,.45],knee:[.5,.63],ankle:[.5,.82]}
+  ],
+  high_knees:[
+    {head:[.5,.10],shoulder:[.5,.22],elbow:[.48,.34],hand:[.46,.46],hip:[.5,.45],knee:[.5,.63],ankle:[.5,.82]},
+    {head:[.5,.10],shoulder:[.5,.22],elbow:[.48,.34],hand:[.46,.46],hip:[.5,.45],knee:[.64,.46],ankle:[.60,.63]}
   ]
 };
-const ANIM_ORIENTATION = {pushup:'wide', situp:'wide', plank:'wide', squat:'tall', burpee:'tall'};
+const ANIM_ORIENTATION = {pushup:'wide', situp:'wide', plank:'wide', jumping_jack:'tall', bicep_curl:'tall', shoulder_press:'tall', high_knees:'tall'};
 function setCanvasOrientation(animKey){
   const wide = ANIM_ORIENTATION[animKey]==='wide';
   document.querySelectorAll('.canvas-box').forEach(b=>b.classList.toggle('wide', wide));
 }
 function animKeyFor(exId){
-  if(exId==='plank') return 'plank';
-  if(exId==='burpee') return 'burpee';
+  if(HUMAN_FRAMES[exId]) return exId;
   const cat = EX[exId] ? EX[exId].cat : 'other';
-  if(cat==='pushups') return 'pushup';
-  if(cat==='squats') return 'squat';
   if(cat==='situps') return 'situp';
-  return 'squat';
+  return 'pushup';
+}
+function thickSeg(ctx, a, b, r, color){
+  ctx.fillStyle = color;
+  const dx=b.x-a.x, dy=b.y-a.y, len=Math.hypot(dx,dy)||1;
+  const nx=-dy/len*r, ny=dx/len*r;
+  ctx.beginPath();
+  ctx.moveTo(a.x+nx,a.y+ny); ctx.lineTo(b.x+nx,b.y+ny); ctx.lineTo(b.x-nx,b.y-ny); ctx.lineTo(a.x-nx,a.y-ny);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.arc(a.x,a.y,r,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(b.x,b.y,r,0,Math.PI*2); ctx.fill();
 }
 function drawHuman(ctx,W,H,f,color){
   ctx.clearRect(0,0,W,H);
-  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineCap='round'; ctx.lineJoin='round';
   const P = k=>({x:f[k].x*W, y:f[k].y*H});
   const head=P('head'), shoulder=P('shoulder'), elbow=P('elbow'), hand=P('hand'), hip=P('hip'), knee=P('knee'), ankle=P('ankle');
-  ctx.lineWidth = W*0.045;
-  function seg(a,b){ ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke(); }
-  seg(shoulder,hip); seg(shoulder,elbow); seg(elbow,hand); seg(hip,knee); seg(knee,ankle);
-  const r = W*0.09;
+  const rTorso=W*0.085, rArm=W*0.05, rArm2=W*0.045, rLeg=W*0.062, rLeg2=W*0.055;
+  thickSeg(ctx, shoulder, hip, rTorso, color);
+  thickSeg(ctx, hip, knee, rLeg, color);
+  thickSeg(ctx, knee, ankle, rLeg2, color);
+  thickSeg(ctx, shoulder, elbow, rArm, color);
+  thickSeg(ctx, elbow, hand, rArm2, color);
+  const r = W*0.11;
+  ctx.fillStyle=color;
   ctx.beginPath(); ctx.arc(head.x,head.y,r,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#062'; ctx.beginPath(); ctx.arc(head.x-r*0.3,head.y-r*0.1,r*0.12,0,Math.PI*2); ctx.arc(head.x+r*0.3,head.y-r*0.1,r*0.12,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='#062'; ctx.lineWidth=r*0.15;
-  ctx.beginPath(); ctx.arc(head.x,head.y+r*0.15,r*0.35,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
+  ctx.fillStyle='#04140b';
+  ctx.beginPath(); ctx.arc(head.x-r*0.32,head.y-r*0.08,r*0.12,0,Math.PI*2); ctx.arc(head.x+r*0.32,head.y-r*0.08,r*0.12,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='#04140b'; ctx.lineWidth=r*0.14; ctx.lineCap='round';
+  ctx.beginPath(); ctx.arc(head.x,head.y+r*0.12,r*0.38,0.15*Math.PI,0.85*Math.PI); ctx.stroke();
   ctx.fillStyle='#ffab40';
-  ctx.beginPath(); ctx.arc(ankle.x,ankle.y,W*0.035,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(ankle.x,ankle.y,W*0.032,0,Math.PI*2); ctx.fill();
 }
 function drawGrid(ctx,W,H,color){
   ctx.strokeStyle=color; ctx.globalAlpha=.08; ctx.lineWidth=1;
@@ -976,7 +994,7 @@ function drawLiveSkeleton(ctx,W,H,lm){
 }
 
 /* ---------- max challenge ---------- */
-const CHALLENGE_SEQ = ['pushup_reg','squat_reg','situp'];
+const CHALLENGE_SEQ = ['pushup_reg','jumping_jack','situp'];
 
 /* ---------- achievements (derived, not stored) ---------- */
 const ACHV_DEFS = [
