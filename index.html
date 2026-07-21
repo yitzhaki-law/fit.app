@@ -120,8 +120,6 @@ input,select{font-family:inherit; outline:none;}
 .stage-node.cur{background:var(--warn); border-color:var(--warn); color:#04140b; box-shadow:0 0 0 5px rgba(255,171,64,.22);}
 .stage-node.near{background:var(--bg4); border-color:var(--warn); color:var(--warn);}
 .stage-node.far{opacity:.5;}
-.stage-scroll-btns{position:sticky; bottom:90px; z-index:15; display:flex; flex-direction:column; gap:8px; align-items:flex-end; pointer-events:none;}
-.stage-scroll-btns button{pointer-events:auto; box-shadow:0 2px 8px rgba(0,0,0,.4);}
 
 /* stage modal */
 #stageModal .exrow{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--border); font-size:13px;}
@@ -1324,12 +1322,8 @@ function renderBoard(){
         if(node) openStageDetail(Number(node.dataset.stage));
       };
       const curNode = wrap.querySelector('.stage-node.cur');
-      if(curNode) curNode.scrollIntoView({block:'center'});
+      if(curNode) curNode.scrollIntoView({block:'center', inline:'center'});
     }
-    const scrollHost = $('tabBoard');
-    const btnTop = $('btnStageScrollTop'), btnBottom = $('btnStageScrollBottom');
-    if(btnTop) btnTop.onclick = ()=>scrollHost.scrollTo({top:0, behavior:'smooth'});
-    if(btnBottom) btnBottom.onclick = ()=>scrollHost.scrollTo({top:scrollHost.scrollHeight, behavior:'smooth'});
   }
 }
 
@@ -1377,10 +1371,6 @@ function renderStagesPath(){
     nodes += `<div class="${cls}" style="bottom:${bottom}px; left:${x}%;" data-stage="${i}">${label}</div>`;
   }
   return `<div class="card stage-progress-head"><div><b>${tr(lang,'yourStage')}:</b> ${CUR_USER.stage} / 1000</div></div>
-    <div class="stage-scroll-btns">
-      <button class="iconbtn" id="btnStageScrollTop" title="⬆️">⬆️</button>
-      <button class="iconbtn" id="btnStageScrollBottom" title="⬇️">⬇️</button>
-    </div>
     <div class="stage-path-wrap" id="stagePathWrap" style="height:${totalH}px;">
       ${bars}${connectors}${nodes}
     </div>`;
